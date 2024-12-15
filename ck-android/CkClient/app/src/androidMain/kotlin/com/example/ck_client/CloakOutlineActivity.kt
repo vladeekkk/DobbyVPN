@@ -61,9 +61,7 @@ class CloakOutlineActivity : ComponentActivity() {
                     initialApiKey = apiKey,
                     isVpnRunning = isVpnRunning,
                     doOnConnectionButtonClick = ::doOnConnectionClick,
-                    doOnShowLogs = {
-                        LogActivity.createIntent(context = this).run(::startActivity)
-                    }
+                    doOnShowLogs = {}
                 )
             }
         }

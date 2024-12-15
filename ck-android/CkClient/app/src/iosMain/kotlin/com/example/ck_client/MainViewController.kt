@@ -1,11 +1,6 @@
 package com.example.ck_client
 
-import KoinInitializer
 import androidx.compose.ui.window.ComposeUIViewController
-import com.dobby.ui.LogScreen
+import com.dobby.navigation.App
 
-fun MainViewController() = ComposeUIViewController(
-    configure = { KoinInitializer().init() }
-) {
-    LogScreen()
-}
+fun MainViewController() = ComposeUIViewController { App() }

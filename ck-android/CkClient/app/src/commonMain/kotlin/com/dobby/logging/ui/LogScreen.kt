@@ -1,4 +1,4 @@
-package com.dobby.ui
+package com.dobby.logging.ui
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
@@ -23,10 +23,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dobby.logs.LogsViewModel
+import com.dobby.logging.presentation.LogsViewModel
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinContext
 import org.koin.compose.currentKoinScope
 
+@Preview
 @Composable
 fun LogScreen(
     modifier: Modifier = Modifier
@@ -35,7 +37,12 @@ fun LogScreen(
         val viewModel: LogsViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsState()
 
-        MaterialTheme {
+        MaterialTheme(
+            colorScheme = MaterialTheme.colorScheme.copy(
+                background = Color.White,
+                onBackground = Color.Black
+            )
+        ) {
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 content = {

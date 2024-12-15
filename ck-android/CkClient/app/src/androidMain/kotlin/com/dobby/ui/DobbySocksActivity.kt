@@ -16,10 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import com.dobby.common.showToast
 import com.dobby.domain.ConnectionStateRepository
-import com.dobby.domain.DobbyConfigsRepository
+import com.dobby.main.domain.DobbyConfigsRepository
 import com.dobby.domain.DobbyConfigsRepositoryImpl
+import com.dobby.navigation.App
 import com.dobby.util.Logger
-import com.example.ck_client.LogActivity
 import com.example.ck_client.ConnectVpnServiceInteractor
 import com.example.ck_client.ui.theme.CkClientTheme
 import kotlinx.coroutines.launch
@@ -54,17 +54,12 @@ class DobbySocksActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     content = { innerPadding ->
-                        DobbySocksScreen(
+                        App(
                             modifier = Modifier.padding(innerPadding),
                             isConnected = ConnectionStateRepository.observe().collectAsState(false),
                             initialConfig = cloakJson,
                             initialKey = outlineKey,
-                            onConnectionButtonClick = ::handleConnectionButtonClick,
-                            onShowLogsClick = {
-                                LogActivity
-                                    .createIntent(context = this)
-                                    .let(::startActivity)
-                            }
+                            onConnectionButtonClick = ::handleConnectionButtonClick
                         )
                     }
                 )

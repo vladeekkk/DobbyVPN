@@ -1,6 +1,7 @@
 package com.dobby.domain
 
 import android.content.SharedPreferences
+import com.dobby.main.domain.DobbyConfigsRepository
 import android.util.Log.i as AndroidLog
 
 internal class DobbyConfigsRepositoryImpl(

@@ -1,4 +1,4 @@
-package com.dobby.domain
+package com.dobby.main.domain
 
 interface DobbyConfigsRepository {
 

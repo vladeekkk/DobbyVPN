@@ -1,6 +1,9 @@
-package com.dobby.logs
+package com.dobby.logging.presentation
 
 import androidx.lifecycle.ViewModel
+import com.dobby.logging.domain.CopyLogsInteractor
+import com.dobby.logging.domain.LogsRepository
+import com.dobby.logging.ui.LogsUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

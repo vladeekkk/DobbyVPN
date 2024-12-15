@@ -1,7 +1,8 @@
 package com.dobby.util
 
 import android.content.Context
-import com.dobby.logs.LogsRepository
+import com.dobby.logging.domain.LogsRepository
+import com.dobby.logs.LogsRepositoryImpl
 
 object Logger {
 
@@ -9,7 +10,7 @@ object Logger {
 
     fun init(context: Context) {
         if (::logsRepository.isInitialized.not()) {
-            logsRepository = LogsRepository(fileDirProvider = { context.filesDir })
+            logsRepository = LogsRepositoryImpl(fileDirProvider = { context.filesDir })
         }
     }
 

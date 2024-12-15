@@ -1,6 +1,6 @@
-package com.dobby.logs
+package com.dobby.logging.domain
 
-expect class LogsRepository {
+interface LogsRepository {
 
     fun writeLog(log: String)
 

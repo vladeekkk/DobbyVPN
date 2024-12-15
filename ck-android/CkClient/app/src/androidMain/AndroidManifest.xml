@@ -55,13 +55,6 @@
             android:label="VPN Service Control"
             android:theme="@style/Theme.CkClient"></activity>
 
-        <!-- LogActivity -->
-        <activity
-            android:name=".LogActivity"
-            android:exported="true"
-            android:label="Log Activity"
-            android:theme="@style/Theme.CkClient"></activity>
-
         <!-- CloakOutlineActivity -->
         <activity
             android:name=".CloakOutlineActivity"

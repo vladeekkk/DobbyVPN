@@ -1,4 +1,4 @@
-package com.dobby.ui
+package com.dobby.main.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,8 +36,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+@Preview
 @Composable
 fun DobbySocksScreen(
     modifier: Modifier = Modifier,
@@ -45,7 +47,7 @@ fun DobbySocksScreen(
     initialConfig: String = "",
     initialKey: String = "",
     onConnectionButtonClick: (String?, String, Boolean) -> Unit = { _, _, _ -> },
-    onShowLogsClick: () -> Unit = {}
+    navController: NavController,
 ) {
     val scrollState = rememberScrollState()
 
@@ -157,7 +159,7 @@ fun DobbySocksScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = onShowLogsClick,
+            onClick = { navController.navigate("LogScreen") },
             shape = RoundedCornerShape(6.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White,
@@ -170,14 +172,3 @@ fun DobbySocksScreen(
         }
     }
 }
-
-@Preview
-@Composable
-fun PreviewMyScreen() {
-    DobbySocksScreen(
-        onConnectionButtonClick = { _, _, _ -> },
-        isConnected = object : State<Boolean> { override val value = false },
-        onShowLogsClick = {}
-    )
-}
-

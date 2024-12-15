@@ -1,19 +1,20 @@
 package com.dobby.logs
 
+import com.dobby.logging.domain.LogsRepository
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 
-actual class LogsRepository(
+class LogsRepositoryImpl(
     private val fileDirProvider: () -> File,
     private val logFileName: String = "app_logs.txt"
-) {
+) : LogsRepository {
 
     private val logFile: File
         get() = File(fileDirProvider(), logFileName)
 
-    actual fun writeLog(log: String) {
+    override fun writeLog(log: String) {
         runCatching {
             FileWriter(logFile, true).use { writer ->
                 writer.appendLine(log)
@@ -21,7 +22,7 @@ actual class LogsRepository(
         }.onFailure { it.printStackTrace() }
     }
 
-    actual fun readLogs(): List<String> {
+    override fun readLogs(): List<String> {
         val logs = mutableListOf<String>()
         runCatching {
             BufferedReader(FileReader(logFile)).use { reader ->
@@ -35,7 +36,7 @@ actual class LogsRepository(
         return logs
     }
 
-    actual fun clearLogs() {
+    override fun clearLogs() {
         if (logFile.exists()) logFile.delete()
     }
 }

@@ -4,12 +4,13 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import com.dobby.common.showToast
+import com.dobby.logging.domain.CopyLogsInteractor
 
-actual class CopyLogsInteractor(
+class CopyLogsInteractorImpl(
     private val context: Context
-) {
+) : CopyLogsInteractor {
 
-    actual fun copy(logs: List<String>) {
+    override fun copy(logs: List<String>) {
         val joinedLogs = logs.joinToString("\n")
         val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData = ClipData.newPlainText("Log Messages", joinedLogs)

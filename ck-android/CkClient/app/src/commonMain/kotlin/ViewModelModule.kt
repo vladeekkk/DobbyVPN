@@ -1,3 +1,3 @@
 import org.koin.core.module.Module
 
-expect val logsModule: Module
+expect val sharedLogsModule: Module

@@ -1,4 +1,4 @@
-package com.dobby.ui
+package com.dobby.main.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

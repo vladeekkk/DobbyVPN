@@ -1,12 +1,14 @@
 package com.dobby
 
-import KoinInitializer
 import android.app.Application
+import com.dobby.di.startDI
+import nativeModule
+import org.koin.android.ext.koin.androidContext
 
 class MyApp: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        KoinInitializer(applicationContext).init()
+        startDI(nativeModule) { androidContext(applicationContext) }
     }
 }

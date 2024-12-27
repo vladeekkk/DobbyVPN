@@ -31,6 +31,10 @@ func executeCommand(command string) (string, error) {
 	return string(output), nil
 }
 
+func WireguardTunnelProtocol() string {
+	return "AmneziaWG"
+}
+
 func StartTunnel(name string) {
 	systemConfigPath := filepath.Join(amneziawgSystemConfigPath, name+".conf")
 

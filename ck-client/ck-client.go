@@ -818,7 +818,7 @@ PersistentKeepalive = 20`
 		wireguardDisconnectButton,
 	)
 
-	wireguardTab := container.NewTabItem("WireGuard", wireguardContent)
+	wireguardTab := container.NewTabItem(WireguardTunnelProtocol(), wireguardContent)
 	tabs.Append(wireguardTab)
 	
 	logTab := container.NewTabItem("Logs", logOutput)

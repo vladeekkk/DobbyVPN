@@ -70,6 +70,10 @@ func saveWireguardConf(config string, fileName string) error {
 	return nil
 }
 
+func WireguardTunnelProtocol() string {
+	return "AmneziaWG"
+}
+
 func StartTunnel(name string) {
 	systemConfigPath := filepath.Join(amneziawgSystemConfigPath, name+".conf")
 	err := installTunnel(systemConfigPath)

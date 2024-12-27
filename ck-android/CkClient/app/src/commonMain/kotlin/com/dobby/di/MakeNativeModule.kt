@@ -1,8 +1,8 @@
-import com.dobby.logging.domain.CopyLogsInteractor
-import com.dobby.logging.domain.LogsRepository
-import com.dobby.main.domain.VpnManager
-import com.dobby.main.domain.ConnectionStateRepository
-import com.dobby.main.domain.DobbyConfigsRepository
+import com.dobby.feature.logging.domain.CopyLogsInteractor
+import com.dobby.feature.logging.domain.LogsRepository
+import com.dobby.feature.main.domain.VpnManager
+import com.dobby.feature.main.domain.ConnectionStateRepository
+import com.dobby.feature.main.domain.DobbyConfigsRepository
 import org.koin.core.module.Module
 import org.koin.core.scope.Scope
 import org.koin.dsl.module

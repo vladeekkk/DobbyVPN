@@ -5,9 +5,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.dobby.logging.ui.LogScreen
-import com.dobby.main.presentation.MainViewModel
-import com.dobby.main.ui.DobbySocksScreen
+import com.dobby.feature.logging.ui.LogScreen
+import com.dobby.feature.main.presentation.MainViewModel
+import com.dobby.feature.main.ui.DobbySocksScreen
 
 @Composable
 fun App(

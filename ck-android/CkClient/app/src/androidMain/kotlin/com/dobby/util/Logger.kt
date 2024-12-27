@@ -1,8 +1,8 @@
 package com.dobby.util
 
 import android.content.Context
-import com.dobby.logging.domain.LogsRepository
-import com.dobby.logs.LogsRepositoryImpl
+import com.dobby.feature.logging.domain.LogsRepository
+import com.dobby.feature.logging.LogsRepositoryImpl
 
 object Logger {
 

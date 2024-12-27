@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import cloak_outline.OutlineDevice
 import cloak_outline.Cloak_outline
-import com.dobby.domain.ConnectionStateRepository
+import com.dobby.main.domain.ConnectionStateRepository
 import com.dobby.main.domain.DobbyConfigsRepository
 import com.dobby.domain.DobbyConfigsRepositoryImpl
 import com.dobby.util.Logger

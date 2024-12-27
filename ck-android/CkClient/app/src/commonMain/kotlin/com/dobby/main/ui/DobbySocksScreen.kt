@@ -23,7 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,25 +36,26 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.dobby.main.presentation.MainViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Preview
 @Composable
 fun DobbySocksScreen(
     modifier: Modifier = Modifier,
-    isConnected: State<Boolean>,
-    initialConfig: String = "",
-    initialKey: String = "",
-    onConnectionButtonClick: (String?, String, Boolean) -> Unit = { _, _, _ -> },
     navController: NavController,
+    viewModel: MainViewModel = viewModel()
 ) {
     val scrollState = rememberScrollState()
 
     val isCloakEnabled = remember { mutableStateOf(true) }
-    var cloakJson by remember { mutableStateOf(initialConfig) }
-    var apiKey by remember { mutableStateOf(initialKey) }
     val focusRequester1 = remember { FocusRequester() }
+    val uiState by viewModel.uiState.collectAsState()
+
+    var cloakJson by remember { mutableStateOf(uiState.cloakJson) }
+    var apiKey by remember { mutableStateOf(uiState.outlineKey) }
 
     Column(
         modifier = modifier
@@ -81,8 +82,8 @@ fun DobbySocksScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             TagChip(
-                tagText = if (isConnected.value) "connected" else "disconnected",
-                color = if (isConnected.value) 0xFFDCFCE7 else 0xFFFEE2E2
+                tagText = if (uiState.isConnected) "connected" else "disconnected",
+                color = if (uiState.isConnected) 0xFFDCFCE7 else 0xFFFEE2E2
             )
         }
 
@@ -111,7 +112,8 @@ fun DobbySocksScreen(
             Text(
                 text = "Enable cloak?",
                 color = Color.Black,
-                modifier = Modifier.padding(horizontal = 8.dp))
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
         }
         TextField(
             value = cloakJson,
@@ -145,7 +147,9 @@ fun DobbySocksScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { onConnectionButtonClick(cloakJson, apiKey, isCloakEnabled.value) },
+            onClick = {
+                viewModel.onConnectionButtonClicked(cloakJson, apiKey, isCloakEnabled.value)
+            },
             shape = RoundedCornerShape(6.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Black,
@@ -153,7 +157,7 @@ fun DobbySocksScreen(
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (isConnected.value) "Disconnect" else "Connect")
+            Text(if (uiState.isConnected) "Disconnect" else "Connect")
         }
 
         Spacer(modifier = Modifier.height(16.dp))

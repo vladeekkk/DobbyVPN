@@ -6,5 +6,15 @@ var nativeModule: Koin_coreModule = MakeNativeModuleKt.makeNativeModule(
   },
   logsRepository: { scope in
       return LocalLogsRepository()
+  },
+  configsRepository: { scope in
+      return DobbyConfigsRepositoryImpl()
+  },
+  connectionStateRepository: { scope in
+      return ConnectionStateRepository()
+  },
+  vpnManager: { scope in
+      return VpnManagerImpl()
+      
   }
 )

@@ -1,10 +1,9 @@
-package com.dobby.domain
+package com.dobby.main.domain
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.firstOrNull
-import java.util.concurrent.atomic.AtomicBoolean
 
 object ConnectionStateRepository {
 
@@ -14,17 +13,17 @@ object ConnectionStateRepository {
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    private val isInitialized = AtomicBoolean(false)
+    private var isInitialized = false
 
     fun init(value: Boolean) {
-        if (isInitialized.compareAndSet(false, true)) {
+        if (!isInitialized) {
             connectionFlow.tryEmit(value)
+            isInitialized = true
         }
     }
 
-
     fun update(isConnected: Boolean) {
-        isInitialized.set(true)
+        isInitialized = true
         connectionFlow.tryEmit(isConnected)
     }
 
@@ -32,7 +31,7 @@ object ConnectionStateRepository {
         return connectionFlow
     }
 
-    suspend fun get(): Boolean {
+    suspend fun isConnected(): Boolean {
         return connectionFlow.firstOrNull() ?: false
     }
 }

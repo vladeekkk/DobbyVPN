@@ -1,32 +1,27 @@
 package com.dobby.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.dobby.logging.ui.LogScreen
+import com.dobby.main.presentation.MainViewModel
 import com.dobby.main.ui.DobbySocksScreen
 
 @Composable
 fun App(
     modifier: Modifier = Modifier,
-    isConnected: State<Boolean> = object : State<Boolean> { override val value = false },
-    initialConfig: String = "",
-    initialKey: String = "",
-    onConnectionButtonClick: (String?, String, Boolean) -> Unit = { _, _, _ -> }
+    mainViewModel: MainViewModel
 ) {
-    val navController = androidx.navigation.compose.rememberNavController()
+    val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "DobbySocksScreen") {
         composable("DobbySocksScreen") {
             DobbySocksScreen(
                 modifier,
-                isConnected,
-                initialConfig,
-                initialKey,
-                onConnectionButtonClick,
-                navController
+                navController,
+                mainViewModel
             )
         }
         composable("LogScreen") {

@@ -15,11 +15,12 @@ import cloak_outline.Cloak_outline
 import com.dobby.feature.main.domain.ConnectionStateRepository
 import com.dobby.feature.main.domain.DobbyConfigsRepository
 import com.dobby.domain.DobbyConfigsRepositoryImpl
-import com.dobby.util.Logger
 import com.dobby.feature.vpn_service.domain.CloakConnectionInteractor
+import com.dobby.util.Logger
 import com.dobby.feature.vpn_service.domain.IpFetcher
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import org.koin.android.ext.android.inject
 import java.io.BufferedReader
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -46,7 +47,8 @@ class MyVpnService : VpnService() {
     private var device: OutlineDevice? = null
     private val ipFetcher: IpFetcher = IpFetcher()
     private val vpnInterfaceFactory: DobbyVpnInterfaceFactory = DobbyVpnInterfaceFactory()
-    private val cloakConnectInteractor = CloakConnectionInteractor
+
+    private val cloakConnectInteractor: CloakConnectionInteractor by inject()
 
     private val bufferSize = 65536
     private var inputStream: FileInputStream? = null

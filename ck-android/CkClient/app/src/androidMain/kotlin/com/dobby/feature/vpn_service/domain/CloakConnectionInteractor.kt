@@ -1,18 +1,17 @@
 package com.dobby.feature.vpn_service.domain
 
-import cloak_outline.Cloak_outline
-import com.dobby.util.Logger
+import com.dobby.feature.vpn_service.CloakLibFacade
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 
-object CloakConnectionInteractor {
+class CloakConnectionInteractor(
+    private val cloakLibFacade: CloakLibFacade
+) {
 
     private val isConnected = AtomicBoolean(false)
 
-    // TODO idk why this exists, refactor later
-    private val connectionsCounter = AtomicInteger(0)
+    private val wasPreviouslyConnected = AtomicBoolean(false)
 
     suspend fun connect(
         config: String,
@@ -22,14 +21,13 @@ object CloakConnectionInteractor {
         if (config.isEmpty() || localHost.isEmpty() || localPort.isEmpty()) {
             return ConnectResult.ValidationError
         }
-        Logger.log("Attempting to connect cloak")
         return withContext(Dispatchers.IO) {
             if (isConnected.compareAndSet(false, true)) {
                 val result = runCatching {
-                    if (connectionsCounter.incrementAndGet() == 1) {
-                        Cloak_outline.startCloakClient(localHost, localPort, config, false)
+                    if (wasPreviouslyConnected.compareAndSet(false, true)) {
+                        cloakLibFacade.startClient(localHost, localPort, config)
                     } else {
-                        Cloak_outline.startAgain()
+                        cloakLibFacade.restartClient()
                     }
                 }
                 if (result.isSuccess) {
@@ -44,10 +42,9 @@ object CloakConnectionInteractor {
     }
 
     suspend fun disconnect(): DisconnectResult {
-        Logger.log("Attempting to disconnect cloak")
         return withContext(Dispatchers.IO) {
             if (isConnected.compareAndSet(true, false)) {
-                val result = runCatching { Cloak_outline.stopCloak() }
+                val result = runCatching { cloakLibFacade.stopClient() }
                 if (result.isSuccess) {
                     DisconnectResult.Success
                 } else {

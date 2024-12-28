@@ -5,7 +5,7 @@ import app
 struct iOSApp: App {
     
     init() {
-        StartDIKt.startDI(nativeModule: nativeModule) {_ in }
+        StartDIKt.startDI(nativeModules: [nativeModule]) {_ in }
     }
     
     var body: some Scene {

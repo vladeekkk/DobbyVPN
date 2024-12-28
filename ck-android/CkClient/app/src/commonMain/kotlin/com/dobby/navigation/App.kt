@@ -16,15 +16,18 @@ fun App(
 ) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "DobbySocksScreen") {
-        composable("DobbySocksScreen") {
+    NavHost(
+        navController = navController,
+        startDestination = MainScreen
+    ) {
+        composable<MainScreen> {
             DobbySocksScreen(
                 modifier,
                 navController,
                 mainViewModel
             )
         }
-        composable("LogScreen") {
+        composable<LogsScreen> {
             LogScreen()
         }
     }

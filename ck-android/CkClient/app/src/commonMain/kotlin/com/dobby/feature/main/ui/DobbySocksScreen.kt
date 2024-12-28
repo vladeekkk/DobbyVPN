@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.dobby.feature.main.presentation.MainViewModel
+import com.dobby.navigation.LogsScreen
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Preview
@@ -163,7 +164,7 @@ fun DobbySocksScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { navController.navigate("LogScreen") },
+            onClick = { navController.navigate(LogsScreen) },
             shape = RoundedCornerShape(6.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White,

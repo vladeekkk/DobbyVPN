@@ -39,7 +39,9 @@ object CloakLib {
                 else -> throw UnsupportedOperationException("Unsupported architecture")
             }
 
-            val libPath = File(System.getProperty("user.dir"), "libs/$libFileName").absolutePath
+            val resourcesDir = File(System.getProperty("compose.application.resources.dir")).resolve(libFileName)
+
+            val libPath = resourcesDir.absolutePath
 
             println("Attempting to load Cloak library from path: $libPath")
             val nativeLibrary = NativeLibrary.getInstance(libPath)

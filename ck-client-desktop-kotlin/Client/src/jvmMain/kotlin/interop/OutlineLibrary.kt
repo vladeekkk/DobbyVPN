@@ -5,6 +5,8 @@ import com.sun.jna.Native
 import com.sun.jna.Platform
 import com.sun.jna.NativeLibrary
 import java.io.File
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 interface OutlineLibrary : Library {
     fun StartOutline(key: String)
@@ -39,7 +41,9 @@ object OutlineLib {
                 else -> throw UnsupportedOperationException("Unsupported architecture")
             }
 
-            val libPath = File(System.getProperty("user.dir"), "libs/$libFileName").absolutePath
+            val encodedPath = this::class.java.protectionDomain.codeSource.location.path
+            val decodedPath = URLDecoder.decode(encodedPath, StandardCharsets.UTF_8.name())
+            val libPath = File(decodedPath, "/../../bin/$libFileName").absolutePath
 
             println("Attempting to load library from path: $libPath")
             val nativeLibrary = NativeLibrary.getInstance(libPath)

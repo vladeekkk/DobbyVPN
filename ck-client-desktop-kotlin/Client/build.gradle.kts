@@ -1,6 +1,7 @@
 plugins {
     kotlin("multiplatform") version "1.9.10"
     id("org.jetbrains.compose") version "1.5.2"
+    id("dev.hydraulic.conveyor") version "1.12"
 }
 
 group = "com.example"
@@ -47,12 +48,13 @@ compose.desktop {
             targetFormats(
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Dmg,
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi,
-                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb,
+                org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe
             )
+
             packageName = "CombinedVPNClient"
             packageVersion = "1.0.0"
 
-            // иконки
             macOS {
                 iconFile.set(project.file("logos/logo.icns"))
             }
@@ -62,6 +64,7 @@ compose.desktop {
             linux {
                 iconFile.set(project.file("logos/logo.png"))
             }
+            appResourcesRootDir.set(project.file("src/jvmMain/resources"))
         }
     }
 

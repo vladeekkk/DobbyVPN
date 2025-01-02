@@ -6,6 +6,7 @@ package main
 import (
 	"net"
 	"os"
+	"time"
 
 	"github.com/vishvananda/netlink"
 	"golang.org/x/sys/unix"
@@ -159,6 +160,9 @@ func installTunnel(configFilePath, interfaceName string) error {
 	} else {
 		Logging.Info.Printf("Tunnel initialisation success")
 	}
+
+	// Wait for service to run
+	time.Sleep(100 * time.Millisecond)
 
 	if setUpInterface(configFilePath, interfaceName); err != nil {
 		return err

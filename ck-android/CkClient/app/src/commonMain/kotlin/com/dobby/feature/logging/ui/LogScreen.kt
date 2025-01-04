@@ -1,6 +1,7 @@
 package com.dobby.feature.logging.ui
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,8 +25,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,6 +53,9 @@ fun LogScreen(
         val viewModel: LogsViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsState()
 
+        // TODO check if there is a more elegant solution
+        var hasSwipedBack by remember { mutableStateOf(false) }
+
         MaterialTheme(
             colorScheme = MaterialTheme.colorScheme.copy(
                 background = Color.White,
@@ -56,7 +64,16 @@ fun LogScreen(
         ) {
             Scaffold(
                 topBar = { Toolbar(modifier, onBackClicked = { navController.popBackStack() }) },
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectHorizontalDragGestures { _, dragAmount ->
+                            if (!hasSwipedBack && dragAmount > 50) {
+                                hasSwipedBack = true
+                                navController.popBackStack()
+                            }
+                        }
+                    },
                 content = { innerPadding ->
                     Column(
                         modifier = modifier

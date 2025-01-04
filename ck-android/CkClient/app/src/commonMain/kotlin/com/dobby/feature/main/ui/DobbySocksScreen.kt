@@ -2,6 +2,7 @@ package com.dobby.feature.main.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,9 +32,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,6 +43,11 @@ import com.dobby.feature.main.presentation.MainViewModel
 import com.dobby.navigation.LogsScreen
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+/**
+ * TextField is not kept above keyboard when resized while typing
+ * https://issuetracker.google.com/issues/266094055
+ */
+
 @Preview
 @Composable
 fun DobbySocksScreen(
@@ -50,16 +55,21 @@ fun DobbySocksScreen(
     navController: NavController,
     viewModel: MainViewModel = viewModel()
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
     val scrollState = rememberScrollState()
 
     val isCloakEnabled = remember { mutableStateOf(true) }
-    val focusRequester1 = remember { FocusRequester() }
     val uiState by viewModel.uiState.collectAsState()
 
     var cloakJson by remember { mutableStateOf(uiState.cloakJson) }
     var apiKey by remember { mutableStateOf(uiState.outlineKey) }
     Scaffold(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { keyboardController?.hide() })
+            },
         content = { innerPadding ->
             Column(
                 modifier = modifier
@@ -129,9 +139,6 @@ fun DobbySocksScreen(
 
                         ),
                     enabled = isCloakEnabled.value,
-                    keyboardActions = KeyboardActions(
-                        onDone = { focusRequester1.requestFocus() }
-                    ),
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
                         .fillMaxWidth()
@@ -144,9 +151,9 @@ fun DobbySocksScreen(
                     onValueChange = { apiKey = it },
                     label = { Text("Enter outline config") },
                     singleLine = false,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .clip(RoundedCornerShape(6.dp))
-                        .focusRequester(focusRequester1)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 

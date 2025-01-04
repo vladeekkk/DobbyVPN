@@ -9,20 +9,30 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.dobby.feature.logging.presentation.LogsViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinContext
@@ -31,7 +41,8 @@ import org.koin.compose.currentKoinScope
 @Preview
 @Composable
 fun LogScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController
 ) {
     KoinContext {
         val viewModel: LogsViewModel = koinViewModel()
@@ -44,12 +55,14 @@ fun LogScreen(
             )
         ) {
             Scaffold(
+                topBar = { Toolbar(modifier, onBackClicked = { navController.popBackStack() }) },
                 modifier = Modifier.fillMaxSize(),
-                content = {
+                content = { innerPadding ->
                     Column(
                         modifier = modifier
                             .fillMaxSize()
-                            .padding(16.dp)
+                            .padding(innerPadding)
+                            .padding(start = 16.dp, end = 16.dp)
                     ) {
                         Button(
                             onClick = { viewModel.copyLogsToClipBoard() },
@@ -103,4 +116,37 @@ inline fun <reified T : ViewModel> koinViewModel(): T {
     return viewModel {
         scope.get<T>()
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun Toolbar(
+    modifier: Modifier = Modifier,
+    onBackClicked: () -> Unit
+) {
+    TopAppBar(
+        title = {
+            Text(
+                text = "Back",
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.W600,
+                    color = Color.Black
+                )
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = onBackClicked) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.Black
+                )
+            }
+        },
+        modifier = modifier,
+        colors = TopAppBarDefaults.mediumTopAppBarColors(
+            containerColor = Color.White
+        )
+    )
 }

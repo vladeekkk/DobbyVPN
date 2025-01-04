@@ -39,14 +39,9 @@ class DobbySocksActivity : ComponentActivity() {
 
         setContent {
             CkClientTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    content = { innerPadding ->
-                        App(
-                            modifier = Modifier.padding(innerPadding),
-                            mainViewModel = viewModel
-                        )
-                    }
+                App(
+                    modifier = Modifier,
+                    mainViewModel = viewModel
                 )
             }
         }
@@ -65,8 +60,8 @@ class DobbySocksActivity : ComponentActivity() {
     private fun initVpnPermissionLauncher() {
         requestVpnPermissionLauncher = registerForActivityResult(
             StartActivityForResult()
-        ) {
-            result -> viewModel.checkPermissionAndStartVpn(isGranted = result.resultCode == RESULT_OK)
+        ) { result ->
+            viewModel.checkPermissionAndStartVpn(isGranted = result.resultCode == RESULT_OK)
         }
     }
 }

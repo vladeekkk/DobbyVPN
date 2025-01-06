@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.dobby.awg.GoBackendWrapper
 import com.dobby.feature.main.presentation.MainViewModel
 import com.dobby.navigation.LogsScreen
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -66,6 +67,9 @@ fun DobbySocksScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.Center
     ) {
+        Text("AmneziaWG ${GoBackendWrapper.awgVersion()}", fontSize = 38.sp)
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             modifier = Modifier

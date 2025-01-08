@@ -13,6 +13,39 @@
 :: limitations under the License.
 
 @echo off
+
+:: Проверяем, запущен ли скрипт от имени администратора
+echo "Is admin: %1"
+echo "Current dir: %cd%"
+
+if not %1==am_admin (
+    echo "NOT ADMIN"
+    if not %1=="" (
+        echo %1 > "%temp%\current_dir.txt"
+        echo "Current dir 2: %cd%"
+    )
+    :: Запускаем скрипт от имени администратора, передавая путь через временный файл
+    powershell -Command "Start-Process -FilePath '%~f0' -ArgumentList 'am_admin' -Verb RunAs" & exit /b
+)
+
+
+echo "Script is running with administrative privileges."
+
+:: Читаем путь из временного файла
+set /p CURRENT_DIR=<"%temp%\current_dir.txt"
+
+:: Используем путь, если он существует
+if not %CURRENT_DIR%=="" (
+    echo "Changing directory to: %CURRENT_DIR%"
+    cd /d %CURRENT_DIR% || (
+        echo "Failed to change directory to: %CURRENT_DIR%"
+        exit /b
+    )
+)
+
+echo "Current dir after change: %cd%"
+
+
 :: See https://ss64.com/nt/delayedexpansion.html
 setlocal enabledelayedexpansion
 

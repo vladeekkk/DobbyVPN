@@ -1,5 +1,7 @@
 package com.dobby.feature.main.ui
 
+import android.R.attr.value
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -43,12 +45,14 @@ import com.dobby.feature.main.presentation.MainViewModel
 import com.dobby.navigation.LogsScreen
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+
 @Preview
 @Composable
 fun DobbySocksScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    viewModel: MainViewModel = viewModel()
+    viewModel: MainViewModel = viewModel(),
+    onAmneziaWGRoute: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -67,7 +71,9 @@ fun DobbySocksScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        Text("AmneziaWG ${GoBackendWrapper.awgVersion()}", fontSize = 38.sp)
+        Button(onClick = onAmneziaWGRoute) {
+            Text("Go to AmneziaWG VPN")
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

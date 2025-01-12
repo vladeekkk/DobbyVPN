@@ -45,7 +45,10 @@ class DobbySocksActivity : ComponentActivity() {
                         App(
                             modifier = Modifier.padding(innerPadding),
                             mainViewModel = viewModel
-                        )
+                        ) {
+                            val myIntent = Intent(this, AmneziaWGActivity::class.java)
+                            this.startActivity(myIntent)
+                        }
                     }
                 )
             }

@@ -1,7 +1,5 @@
 package com.dobby.awg
 
-import com.dobby.awg.GoBackend
-
 class GoBackendWrapper {
     companion object {
         private val backend = GoBackend()

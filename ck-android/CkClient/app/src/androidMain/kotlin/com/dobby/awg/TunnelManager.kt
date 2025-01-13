@@ -1,18 +1,12 @@
 package com.dobby.awg
 
-import android.content.Context
-import android.content.Intent
 import android.net.VpnService
 import android.net.VpnService.Builder
 import android.os.Build
 import android.system.OsConstants
 import com.dobby.awg.config.Config
-import com.dobby.feature.vpn_service.AmneziaWGVpnService
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
-class TunnelManager(private val context: Context) {
+class TunnelManager(private val service: VpnService) {
 
     private val tunnelName = "awg0"
     var tunnelData: TunnelData =
@@ -24,19 +18,7 @@ class TunnelManager(private val context: Context) {
         if (state == TunnelState.UP) {
             if (config == null) throw RuntimeException("Empty config")
 
-            if (VpnService.prepare(context) != null) throw RuntimeException("VPN_NOT_AUTHORIZED")
-
-            if (!vpnService.isDone) {
-                val vpnIntent = Intent(context, AmneziaWGVpnService::class.java)
-                context.startService(vpnIntent)
-            }
-
-            val service: AmneziaWGVpnService
-            try {
-                service = vpnService.get(2, TimeUnit.SECONDS)
-            } catch (e: TimeoutException) {
-                throw RuntimeException(e)
-            }
+            if (VpnService.prepare(service) != null) throw RuntimeException("VPN_NOT_AUTHORIZED")
 
             if (tunnelData.currentTunnelHandle != -1) {
                 // Tunnel already up
@@ -98,10 +80,5 @@ class TunnelManager(private val context: Context) {
             GoBackendWrapper.awgTurnOff(tunnelData.currentTunnelHandle)
             tunnelData = TunnelData(tunnelName, null, TunnelState.DOWN, -1)
         }
-    }
-
-    companion object {
-        var vpnService: CompletableFuture<AmneziaWGVpnService> =
-            CompletableFuture<AmneziaWGVpnService>()
     }
 }

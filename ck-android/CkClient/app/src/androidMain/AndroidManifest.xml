@@ -18,16 +18,8 @@
         android:theme="@style/Theme.CkClient"
         tools:targetApi="31">
 
-<!--        <service-->
-<!--            android:name="com.dobby.feature.vpn_service.MyVpnService"-->
-<!--            android:exported="true"-->
-<!--            android:permission="android.permission.BIND_VPN_SERVICE">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.net.VpnService" />-->
-<!--            </intent-filter>-->
-<!--        </service>-->
         <service
-            android:name="com.dobby.feature.vpn_service.AmneziaWGVpnService"
+            android:name="com.dobby.feature.vpn_service.MyVpnService"
             android:exported="true"
             android:permission="android.permission.BIND_VPN_SERVICE">
             <intent-filter>
@@ -44,12 +36,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <activity
-            android:name="com.dobby.feature.main.ui.AmneziaWGActivity"
-            android:exported="true"
-            android:theme="@style/Theme.CkClient">
         </activity>
     </application>
 </manifest>

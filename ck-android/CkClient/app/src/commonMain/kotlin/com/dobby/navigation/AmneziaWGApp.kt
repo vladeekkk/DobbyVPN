@@ -19,7 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.dobby.feature.main.presentation.MainViewModel
 
 const val INITIAL_CONTENT = """[Interface]
 PrivateKey = <...>
@@ -44,17 +46,17 @@ PersistentKeepalive = 60"""
 @Composable
 fun AmneziaWGApp(
     modifier: Modifier,
-    onConnect: (String) -> Unit,
-    onDisconnect: () -> Unit,
-    titleContent: @Composable () -> Unit
+    navController: NavController,
+    viewModel: MainViewModel = viewModel(),
 ) {
     var content by remember { mutableStateOf(INITIAL_CONTENT) }
+    var status by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center
     ) {
-        titleContent.invoke()
+        Text("AmneziaWG ${viewModel.getAwgVersion()}")
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -75,7 +77,8 @@ fun AmneziaWGApp(
         ) {
             Button(
                 onClick = {
-                    onConnect(content)
+                    viewModel.onAwgConnect(content)
+                    status = "Connected"
                 },
                 modifier = Modifier.weight(1.0f)
             ) {
@@ -83,12 +86,17 @@ fun AmneziaWGApp(
             }
             Button(
                 onClick = {
-                    onDisconnect()
+                    viewModel.onAwgDisconnect()
+                    status = "Disconnected"
                 },
                 modifier = Modifier.weight(1.0f)
             ) {
                 Text("Disconnect")
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(status)
     }
 }

@@ -13,7 +13,6 @@ import com.dobby.feature.main.ui.DobbySocksScreen
 fun App(
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
-    onAmneziaWGRoute: () -> Unit = {}
 ) {
     val navController = rememberNavController()
 
@@ -26,7 +25,13 @@ fun App(
                 modifier,
                 navController,
                 mainViewModel,
-                onAmneziaWGRoute
+            )
+        }
+        composable<AmneziaWGScreen> {
+            AmneziaWGApp(
+                modifier,
+                navController,
+                mainViewModel,
             )
         }
         composable<LogsScreen> {

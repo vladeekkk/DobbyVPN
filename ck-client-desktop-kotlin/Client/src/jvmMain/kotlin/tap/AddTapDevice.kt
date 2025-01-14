@@ -18,6 +18,7 @@ fun addTapDevice(appDir: String) {
     // Checking if a TAP device exists
     if (executeCommand("netsh interface show interface name=$deviceName") == 0) {
         println("TAP network device already exists.")
+        configureTapDevice(deviceName)
         return
     }
     println("Creating TAP network device...")
@@ -34,6 +35,28 @@ fun addTapDevice(appDir: String) {
     // Rename TAP device
     if (executeCommand("netsh interface set interface name=\"$tapName\" newname=\"$deviceName\"") != 0) {
         println("Could not rename TAP device.")
+        return
+    }
+
+    configureTapDevice(deviceName)
+}
+
+fun configureTapDevice(deviceName: String) {
+    println("Configuring TAP device subnet...")
+    if (executeCommand("netsh interface ip set address $deviceName static 10.0.85.2 255.255.255.255") != 0) {
+        println("Could not set TAP network device subnet.")
+        return
+    }
+
+    println("Configuring primary DNS...")
+    if (executeCommand("netsh interface ip set dnsservers $deviceName static address=1.1.1.1") != 0) {
+        println("Could not configure TAP device primary DNS.")
+        return
+    }
+
+    println("Configuring secondary DNS...")
+    if (executeCommand("netsh interface ip add dnsservers $deviceName 9.9.9.9 index=2") != 0) {
+        println("Could not configure TAP device secondary DNS.")
         return
     }
 }

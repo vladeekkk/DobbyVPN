@@ -10,8 +10,6 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import cloak_outline.OutlineDevice
-import cloak_outline.Cloak_outline
 import com.dobby.feature.main.domain.ConnectionStateRepository
 import com.dobby.feature.main.domain.DobbyConfigsRepository
 import com.dobby.domain.DobbyConfigsRepositoryImpl
@@ -44,7 +42,7 @@ class MyVpnService : VpnService() {
     private lateinit var dobbyConfigsRepository: DobbyConfigsRepository
 
     private var vpnInterface: ParcelFileDescriptor? = null
-    private var device: OutlineDevice? = null
+    private val deviceFacade: OutlineDeviceFacade by inject()
     private val ipFetcher: IpFetcher = IpFetcher()
     private val vpnInterfaceFactory: DobbyVpnInterfaceFactory = DobbyVpnInterfaceFactory()
 
@@ -86,7 +84,7 @@ class MyVpnService : VpnService() {
         if (connectionFlag) {
             val apiKey = dobbyConfigsRepository.getOutlineKey()
             Logger.log("!!! Starting connecting Outline")
-            device = Cloak_outline.newOutlineDevice(apiKey)
+            deviceFacade.init(apiKey)
             enableCloakIfNeeded()
             ConnectionStateRepository.update(isConnected = true) // todo move somewhere
         } else {
@@ -267,7 +265,7 @@ class MyVpnService : VpnService() {
                             val length = inputStream?.read(buffer.array()) ?: 0
                             if (length > 0) {
                                 val packetData: ByteArray = buffer.array().copyOfRange(0, length)
-                                device?.write(packetData)
+                                deviceFacade.write(packetData)
                                 // val hexString = packetData.joinToString(separator = " ") { byte -> "%02x".format(byte) }
                                 // Logger.log("MyVpnService: Packet Data Written (Hex): $hexString")
                             }
@@ -336,7 +334,7 @@ class MyVpnService : VpnService() {
                         //buffer.clear()
                         //Logger.log("MyVpnService: read packet from tunnel")
                         if (check) {
-                            val packetData: ByteArray? = device?.read()
+                            val packetData: ByteArray? = deviceFacade.read()
 
                             packetData?.let {
                                 outputStream?.write(it)

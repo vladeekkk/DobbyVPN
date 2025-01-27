@@ -1,5 +1,6 @@
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.sun.jna.Platform
 import ui.MainScreen
 import java.io.File
 import java.io.IOException
@@ -11,7 +12,10 @@ fun main() = application {
     val encodedPath = this::class.java.protectionDomain.codeSource.location.path
     val decodedPath = URLDecoder.decode(encodedPath, StandardCharsets.UTF_8.name())
     val appDir = File(decodedPath).parentFile.absolutePath
-    addTapDevice(appDir)
+    if (Platform.isWindows()) {
+        // start device check
+        addTapDevice(appDir)
+    }
 
     // Очистка логов при завершении приложения
     Runtime.getRuntime().addShutdownHook(Thread {

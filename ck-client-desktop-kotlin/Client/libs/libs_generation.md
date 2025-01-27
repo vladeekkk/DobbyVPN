@@ -10,9 +10,10 @@ GOOS=linux GOARCH=amd64 go build -buildmode=c-shared -o liboutline_linux.so main
 for Windows:
 $env:GOOS="windows"
 $env:GOARCH="amd64"
-go build -buildmode=c-archive -o liboutline_windows.a main.go app.go app_windows.go routing_windows.go tun_device_windows.go outline_packet_proxy.go outline_device.go
+go build -buildmode=c-shared -o liboutline_windows.dll main.go app.go app_windows.go routing_windows.go tun_device_windows.go outline_packet_proxy.go outline_device.go
 
-
+for MacOS:
+GOOS=darwin GOARCH=amd64 go build -buildmode=c-shared -o liboutline_macos.dylib main.go app.go app_macos.go routing_macos.go tun_device_macos.go outline_packet_proxy.go outline_device.go
 
 
 

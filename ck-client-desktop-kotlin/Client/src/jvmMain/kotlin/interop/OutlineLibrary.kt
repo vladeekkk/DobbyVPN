@@ -42,8 +42,17 @@ object OutlineLib {
             }
 
             val encodedPath = this::class.java.protectionDomain.codeSource.location.path
-            val decodedPath = URLDecoder.decode(encodedPath, StandardCharsets.UTF_8.name())
-            val libPath = File(decodedPath, "/../../bin/$libFileName").absolutePath
+            val decodedPath = File(URLDecoder.decode(encodedPath, StandardCharsets.UTF_8.name())).parentFile.parent
+            // set path for windows as default
+            var libPath = File(decodedPath, "/bin/$libFileName").absolutePath
+
+            if (Platform.isLinux()) {
+                libPath = File(decodedPath, "/runtime/lib/$libFileName").absolutePath
+            }
+
+            if (Platform.isMac()) {
+                libPath = File(decodedPath, "runtime/Contents/Home/lib/$libFileName").absolutePath
+            }
 
             println("Attempting to load library from path: $libPath")
             val nativeLibrary = NativeLibrary.getInstance(libPath)

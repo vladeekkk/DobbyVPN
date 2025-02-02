@@ -1,15 +1,20 @@
 import Foundation
 import NetworkExtension
 
-class VPNManager {
+class MyVPNManager {
     
-    static let shared = VPNManager()
+    // 1. Load Existing VPN Configuration
+    // 2. Setup VPN Configuration (if not exists)
+    // 3. Save VPN Configuration
+    // 4. Conntect to the VPN
+    // 5. Disconnect from the VPN
+    // 6. Check VPN Connection Status
     
-    private var vpnManager: NEVPNManager
+    static let shared = MyVPNManager()
     
-    private init() {
-        vpnManager = NEVPNManager.shared()
-    }
+    let vpnManager: NEVPNManager = NEVPNManager.shared()
+    
+    let manager = NETunnelProviderManager()
     
     func loadVPNConfiguration(completion: @escaping (Error?) -> Void) {
         vpnManager.loadFromPreferences { error in
@@ -22,25 +27,27 @@ class VPNManager {
     }
     
     func setupVPNConfiguration(serverAddress: String, username: String, password: String) {
-
-        // Непонятно, как зарегистрировать OutlineTunnelProvider здесь.
-
-        let vpnProtocol = NEPacketTunnelProvider()
         vpnManager.isEnabled = true
+        let packetTunnelProtocol = NETunnelProviderProtocol()
+        packetTunnelProtocol.providerBundleIdentifier = "OutlineTunnelProvider"
+        packetTunnelProtocol.serverAddress = "10.111.222.1"
+
+        packetTunnelProtocol = 1500
+
+        // You cannot directly set IP addresses and DNS servers using NEVPNProtocolPacketTunnel;
+            // Instead, you must handle those in your PacketTunnelProvider implementation.
+        // Example of setting DNS servers is shown in the PacketTunnelProvider implementation
         
-        saveVPNConfiguration { error in
+        self.vpnManager.protocolConfiguration = packetTunnelProtocol
+        self.vpnManager.isEnabled = true
+        self.vpnManager.saveToPreferences { error in
             if let error = error {
                 print("Error saving VPN configuration: \(error)")
             } else {
                 print("VPN configuration saved successfully")
             }
         }
-    }
-    
-    private func saveVPNConfiguration(completion: @escaping (Error?) -> Void) {
-        vpnManager.saveToPreferences { error in
-            completion(error)
-        }
+        
     }
     
     func connectVPN(completion: @escaping (Error?) -> Void) {

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="26f0384e-198d-459a-b9af-6ab443848f3a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../ck-android/CkClient/app/src/androidMain/kotlin/com/example/ck_client/DnsProxyRunnable.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ck-android/CkClient/iosApp/iosApp.xcodeproj/project.xcworkspace/xcuserdata/vladek.xcuserdatad/UserInterfaceState.xcuserstate" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ck-android/CkClient/iosApp/iosApp.xcodeproj/xcuserdata/vladek.xcuserdatad/xcschemes/xcschememanagement.plist" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ck-client/.idea/ck-client.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ck-android/CkClient/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../ck-android/CkClient/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ck-android/CkClient/.idea/deploymentTargetSelector.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../ck-android/CkClient/.idea/deploymentTargetSelector.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ck-android/CkClient/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../ck-android/CkClient/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ck-android/CkClient/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../ck-android/CkClient/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ck-android/CkClient/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../ck-android/CkClient/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ck-android/CkClient/app/src/androidMain/kotlin/com/dobby/domain/CloakConfigRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../ck-android/CkClient/app/src/androidMain/kotlin/com/dobby/domain/CloakConfigRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ck-android/CkClient/app/src/androidMain/kotlin/com/dobby/domain/OutlineKeyRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../ck-android/CkClient/app/src/androidMain/kotlin/com/dobby/domain/OutlineKeyRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ck-android/CkClient/app/src/androidMain/kotlin/com/dobby/ui/DobbySocksActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../ck-android/CkClient/app/src/androidMain/kotlin/com/dobby/ui/DobbySocksActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ck-android/CkClient/app/src/androidMain/kotlin/com/example/ck_client/MyVpnService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../ck-android/CkClient/app/src/androidMain/kotlin/com/example/ck_client/MyVpnService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ck-android/CkClient/app/src/commonMain/kotlin/com/dobby/ui/DobbySocksScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../ck-android/CkClient/app/src/commonMain/kotlin/com/dobby/ui/DobbySocksScreen.kt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="GOROOT" url="file:///usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="2oiAtdNwxpxgp7WY5deJDGZBCSQ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "git-widget-placeholder": "fc243552",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "/Users/vladek/Developer/DobbyVPN/ck-desktop",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-gosdk-5df93f7ad4aa-df9ad98b711f-org.jetbrains.plugins.go.sharedIndexes.bundled-GO-242.23339.24" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-GO-242.23339.24" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+</project>

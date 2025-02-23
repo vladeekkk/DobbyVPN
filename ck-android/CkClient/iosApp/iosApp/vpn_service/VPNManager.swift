@@ -3,51 +3,41 @@ import NetworkExtension
 
 class MyVPNManager {
     
-    // 1. Load Existing VPN Configuration
-    // 2. Setup VPN Configuration (if not exists)
-    // 3. Save VPN Configuration
-    // 4. Conntect to the VPN
-    // 5. Disconnect from the VPN
-    // 6. Check VPN Connection Status
+    private var dobbyBundleIdentifier = "vpn.dobby.app.iosVpnTest"
+    private var dobbyName = "DobbyVPN"
     
-    static let shared = MyVPNManager()
-    
-    let vpnManager: NEVPNManager = NEVPNManager.shared()
-    
-    let manager = NETunnelProviderManager()
-    
-    func loadVPNConfiguration(completion: @escaping (Error?) -> Void) {
-        vpnManager.loadFromPreferences { error in
-            if let error = error {
-                completion(error)
+    private var vpnManager: NETunnelProviderManager!
+
+    func setup(onSuccess: (() -> ())? = nil) {
+        getExistingManager { existingManager in
+            if let manager = existingManager {
+                self.vpnManager = manager
+                print("Using existing manager: \(manager)")
+                onSuccess?()
             } else {
-                completion(nil)
+                self.makeManager().saveToPreferences { error in
+                    if let error = error {
+                        print("Error saving VPN configuration: \(error)")
+                    } else {
+                        print("VPN configuration saved successfully")
+                        onSuccess?()
+                    }
+                }
             }
         }
     }
     
-    func setupVPNConfiguration(serverAddress: String, username: String, password: String) {
+    private func makeManager() -> NETunnelProviderManager {
+        vpnManager = NETunnelProviderManager()
+        vpnManager.localizedDescription = dobbyName
+
+        let proto = NETunnelProviderProtocol()
+        proto.providerBundleIdentifier = dobbyBundleIdentifier
+        proto.serverAddress = "127.0.0.1:4009"
+        proto.providerConfiguration = [:]
+        vpnManager.protocolConfiguration = proto
         vpnManager.isEnabled = true
-        let packetTunnelProtocol = NETunnelProviderProtocol()
-        packetTunnelProtocol.providerBundleIdentifier = "OutlineTunnelProvider"
-        packetTunnelProtocol.serverAddress = "10.111.222.1"
-
-        packetTunnelProtocol = 1500
-
-        // You cannot directly set IP addresses and DNS servers using NEVPNProtocolPacketTunnel;
-            // Instead, you must handle those in your PacketTunnelProvider implementation.
-        // Example of setting DNS servers is shown in the PacketTunnelProvider implementation
-        
-        self.vpnManager.protocolConfiguration = packetTunnelProtocol
-        self.vpnManager.isEnabled = true
-        self.vpnManager.saveToPreferences { error in
-            if let error = error {
-                print("Error saving VPN configuration: \(error)")
-            } else {
-                print("VPN configuration saved successfully")
-            }
-        }
-        
+        return vpnManager
     }
     
     func connectVPN(completion: @escaping (Error?) -> Void) {
@@ -64,7 +54,19 @@ class MyVPNManager {
         completion(nil)
     }
     
-    func isVPNConnected() -> Bool {
-        return vpnManager.connection.status == .connected
+    private func getExistingManager(completion: @escaping (NETunnelProviderManager?) -> Void) {
+        NETunnelProviderManager.loadAllFromPreferences { (managers, error) in
+            let manager = managers?.first(where: { $0.localizedDescription == self.dobbyName })
+            manager!.loadFromPreferences { error in
+                if let error = error {
+                    print("Error loading preferences: \(error)")
+                } else {
+                    do {
+                        print("completion(manager)")
+                        completion(manager)
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,37 +1,41 @@
 import NetworkExtension
-import Foundation
+import MyLibrary
 
-class OutlineTunnelProvider: NEPacketTunnelProvider {
+class PacketTunnelProvider: NEPacketTunnelProvider {
     
     private var device = DeviceFacade()
-    private var readFromDeviceQueue: DispatchQueue?
-    
+
     override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
-        
-        let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "192.168.0.11")                
+
+        let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "192.168.0.11")
                 
         settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1","8.8.8.8"])
         settings.mtu = 1500
 
-        device.initialize(config: "here is config")
+        device.initialize(config: "some config here")
         
-        readFromDeviceQueue = DispatchQueue(label: "qq")
-        
-        readFromDeviceQueue?.async { [weak self] in
-            self?.readPacketsLoop()
+        DispatchQueue.global().async { [weak self] in
+            self?.startReadPacketsFromDevice()
         }
-        
         startReadPacketsAndForwardToDevice()
         completionHandler(nil)
+
     }
     
     override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
         completionHandler()
     }
     
-    private func readPacketsLoop() {
+    override func handleAppMessage(_ messageData: Data, completionHandler: ((Data?) -> Void)?) {
+        if let handler = completionHandler {
+            handler(messageData)
+        }
+    }
+    
+    private func startReadPacketsFromDevice() {
         while true {
             let data = device.read()
+            print("device.read()")
 
             if !data.isEmpty {
                 let packets: [Data] = [data]
@@ -47,7 +51,6 @@ class OutlineTunnelProvider: NEPacketTunnelProvider {
     }
     
     private func startReadPacketsAndForwardToDevice() {
-        // Read packets from the tunnel
         self.packetFlow.readPackets { [weak self] (packets, protocols) in
             guard let self = self else { return }
             if !packets.isEmpty {
@@ -56,9 +59,11 @@ class OutlineTunnelProvider: NEPacketTunnelProvider {
             self.startReadPacketsAndForwardToDevice()
         }
     }
+    
     private func forwardPacketsToDevice(_ packets: [Data], protocols: [NSNumber]) {
-        for (index, packet) in packets.enumerated() {
+        for (_, packet) in packets.enumerated() {
             device.write(data: packet)
         }
     }
+
 }

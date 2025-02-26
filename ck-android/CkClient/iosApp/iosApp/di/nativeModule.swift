@@ -15,6 +15,5 @@ var nativeModule: Koin_coreModule = MakeNativeModuleKt.makeNativeModule(
   },
   vpnManager: { scope in
       return VpnManagerImpl()
-      
   }
 )

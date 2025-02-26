@@ -35,7 +35,10 @@ fun App(
             )
         }
         composable<LogsScreen> {
-            LogScreen()
+            LogScreen(
+                modifier,
+                navController
+            )
         }
     }
 }

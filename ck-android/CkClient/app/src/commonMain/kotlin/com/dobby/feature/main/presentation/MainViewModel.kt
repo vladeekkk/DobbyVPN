@@ -6,6 +6,7 @@ import com.dobby.feature.main.domain.AwgManager
 import com.dobby.feature.main.domain.VpnManager
 import com.dobby.feature.main.domain.ConnectionStateRepository
 import com.dobby.feature.main.domain.DobbyConfigsRepository
+import com.dobby.feature.main.domain.VpnInterface
 import com.dobby.feature.main.ui.MainUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -73,6 +74,7 @@ class MainViewModel(
 
     private fun startVpnService() {
         configsRepository.setIsOutlineEnabled(true)
+        configsRepository.setVpnInterface(VpnInterface.CLOAK_OUTLINE)
         vpnManager.start()
     }
 
@@ -90,6 +92,7 @@ class MainViewModel(
 
         configsRepository.setAwgConfig(config)
         configsRepository.setIsAmneziaWGEnabled(true)
+        configsRepository.setVpnInterface(VpnInterface.AMNEZIA_WG)
         awgManager.onAwgConnect()
     }
 
@@ -98,7 +101,9 @@ class MainViewModel(
             checkVpnPermissionEvents.emit(Unit)
         }
 
+        configsRepository.setAwgConfig(null)
         configsRepository.setIsAmneziaWGEnabled(false)
+        configsRepository.setVpnInterface(VpnInterface.AMNEZIA_WG)
         awgManager.onAwgDisconnect()
     }
 }

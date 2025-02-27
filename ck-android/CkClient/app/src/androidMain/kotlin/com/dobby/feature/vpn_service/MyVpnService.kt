@@ -17,6 +17,7 @@ import com.dobby.awg.TunnelState
 import com.dobby.feature.main.domain.ConnectionStateRepository
 import com.dobby.feature.main.domain.DobbyConfigsRepository
 import com.dobby.domain.DobbyConfigsRepositoryImpl
+import com.dobby.feature.main.domain.VpnInterface
 import com.dobby.feature.vpn_service.domain.CloakConnectionInteractor
 import com.dobby.util.Logger
 import com.dobby.feature.vpn_service.domain.IpFetcher
@@ -84,34 +85,43 @@ class MyVpnService : VpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
-            Logger.log("!!! Starting AmneziaWG")
-            val stringConfig = dobbyConfigsRepository.getAwgConfig()
-            val state = if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
-                TunnelState.UP
-            } else {
-                TunnelState.DOWN
+        when (dobbyConfigsRepository.getVpnInterface()) {
+            VpnInterface.CLOAK_OUTLINE -> {
+                val connectionFlag = dobbyConfigsRepository.getIsOutlineEnabled()
+                check = connectionFlag
+                if (connectionFlag) {
+                    val apiKey = dobbyConfigsRepository.getOutlineKey()
+                    Logger.log("!!! Starting connecting Outline")
+                    device = Cloak_outline.newOutlineDevice(apiKey)
+                    enableCloakIfNeeded()
+                    ConnectionStateRepository.update(isConnected = true) // todo move somewhere
+                } else {
+                    Logger.log("!!! Starting disconnecting Outline")
+                    vpnInterface?.close()
+                    ConnectionStateRepository.update(isConnected = false) // todo move somewhere
+                    stopSelf()
+                }
+
+                return START_STICKY
             }
-            tunnelManager.updateState(stringConfig, state)
+            VpnInterface.AMNEZIA_WG -> {
+                if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
+                    Logger.log("!!! Starting AmneziaWG")
+                    val stringConfig = dobbyConfigsRepository.getAwgConfig()
+                    val state = if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
+                        TunnelState.UP
+                    } else {
+                        TunnelState.DOWN
+                    }
+                    tunnelManager.updateState(stringConfig, state)
+                } else {
+                    Logger.log("!!! Stopping AmneziaWG")
+                    tunnelManager.updateState(null, TunnelState.DOWN)
+                }
 
-            return START_STICKY
+                return START_STICKY
+            }
         }
-
-        val connectionFlag = dobbyConfigsRepository.getIsOutlineEnabled()
-        check = connectionFlag
-        if (connectionFlag) {
-            val apiKey = dobbyConfigsRepository.getOutlineKey()
-            Logger.log("!!! Starting connecting Outline")
-            device = Cloak_outline.newOutlineDevice(apiKey)
-            enableCloakIfNeeded()
-            ConnectionStateRepository.update(isConnected = true) // todo move somewhere
-        } else {
-            Logger.log("!!! Starting disconnecting Outline")
-            vpnInterface?.close()
-            ConnectionStateRepository.update(isConnected = false) // todo move somewhere
-            stopSelf()
-        }
-        return START_STICKY
     }
 
     override fun onDestroy() {

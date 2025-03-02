@@ -2,11 +2,25 @@ package com.dobby.domain
 
 import android.content.SharedPreferences
 import com.dobby.feature.main.domain.DobbyConfigsRepository
+import com.dobby.feature.main.domain.VpnInterface
 import android.util.Log.i as AndroidLog
 
 internal class DobbyConfigsRepositoryImpl(
     private val prefs: SharedPreferences
 ) : DobbyConfigsRepository {
+    override fun getVpnInterface(): VpnInterface {
+        val prefsResult = prefs.getString("vpnInterface", VpnInterface.DEFAULT_VALUE.toString())
+            ?: VpnInterface.DEFAULT_VALUE.toString()
+        AndroidLog("DOBBY_TAG", "getVpnInterface: $prefsResult")
+
+        return VpnInterface.valueOf(prefsResult)
+    }
+
+    override fun setVpnInterface(vpnInterface: VpnInterface) {
+        prefs.edit().putString("vpnInterface", vpnInterface.toString()).apply().also {
+            AndroidLog("DOBBY_TAG", "setVpnInterface: $vpnInterface")
+        }
+    }
 
     override fun getCloakConfig(): String {
         return (prefs.getString("cloakConfig", "") ?: "").also {
@@ -53,6 +67,30 @@ internal class DobbyConfigsRepositoryImpl(
     override fun setIsOutlineEnabled(isOutlineEnabled: Boolean) {
         prefs.edit().putBoolean("isOutlineEnabled", isOutlineEnabled).apply().also {
             AndroidLog("DOBBY_TAG", "setIsOutlineEnabled = $isOutlineEnabled")
+        }
+    }
+
+    override fun getAwgConfig(): String {
+        return (prefs.getString("awgConfig", "") ?: "").also {
+            AndroidLog("DOBBY_TAG", "getAwgConfig, size = ${it.length}")
+        }
+    }
+
+    override fun setAwgConfig(newConfig: String?) {
+        prefs.edit().putString("awgConfig", newConfig).apply().also {
+            AndroidLog("DOBBY_TAG", "setAwgConfig, size = ${newConfig?.length}")
+        }
+    }
+
+    override fun getIsAmneziaWGEnabled(): Boolean {
+        return prefs.getBoolean("isAmneziaWGEnabled", false).also {
+            AndroidLog("DOBBY_TAG", "getIsAmneziaWGEnabled = $it")
+        }
+    }
+
+    override fun setIsAmneziaWGEnabled(isAmneziaWGEnabled: Boolean) {
+        prefs.edit().putBoolean("isAmneziaWGEnabled", isAmneziaWGEnabled).apply().also {
+            AndroidLog("DOBBY_TAG", "setIsAmneziaWGEnabled = $isAmneziaWGEnabled")
         }
     }
 }

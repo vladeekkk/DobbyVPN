@@ -2,9 +2,11 @@ package com.dobby.feature.main.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dobby.feature.main.domain.AwgManager
 import com.dobby.feature.main.domain.VpnManager
 import com.dobby.feature.main.domain.ConnectionStateRepository
 import com.dobby.feature.main.domain.DobbyConfigsRepository
+import com.dobby.feature.main.domain.VpnInterface
 import com.dobby.feature.main.ui.MainUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +17,7 @@ class MainViewModel(
     private val configsRepository: DobbyConfigsRepository,
     private val connectionStateRepository: ConnectionStateRepository,
     private val vpnManager: VpnManager,
+    private val awgManager: AwgManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
@@ -71,11 +74,36 @@ class MainViewModel(
 
     private fun startVpnService() {
         configsRepository.setIsOutlineEnabled(true)
+        configsRepository.setVpnInterface(VpnInterface.CLOAK_OUTLINE)
         vpnManager.start()
     }
 
     private fun stopVpnService() {
         configsRepository.setIsOutlineEnabled(false)
         vpnManager.stop()
+    }
+
+    fun getAwgVersion(): String = awgManager.getAwgVersion()
+
+    fun onAwgConnect(config: String) {
+        viewModelScope.launch {
+            checkVpnPermissionEvents.emit(Unit)
+        }
+
+        configsRepository.setAwgConfig(config)
+        configsRepository.setIsAmneziaWGEnabled(true)
+        configsRepository.setVpnInterface(VpnInterface.AMNEZIA_WG)
+        awgManager.onAwgConnect()
+    }
+
+    fun onAwgDisconnect() {
+        viewModelScope.launch {
+            checkVpnPermissionEvents.emit(Unit)
+        }
+
+        configsRepository.setAwgConfig(null)
+        configsRepository.setIsAmneziaWGEnabled(false)
+        configsRepository.setVpnInterface(VpnInterface.AMNEZIA_WG)
+        awgManager.onAwgDisconnect()
     }
 }

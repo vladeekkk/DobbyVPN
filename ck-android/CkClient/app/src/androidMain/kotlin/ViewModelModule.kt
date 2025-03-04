@@ -1,16 +1,9 @@
-import com.dobby.logs.CopyLogsInteractor
-import com.dobby.logs.LogsRepository
-import com.dobby.logs.LogsViewModel
-import org.koin.android.ext.koin.androidContext
+import com.dobby.feature.logging.presentation.LogsViewModel
+import com.dobby.feature.main.presentation.MainViewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.dsl.module
 
-actual val logsModule = module {
-    factory {
-        LogsRepository(fileDirProvider = { androidContext().filesDir })
-    }
-    factory {
-        CopyLogsInteractor(context = androidContext())
-    }
+actual val sharedModule = module {
     viewModelOf(::LogsViewModel)
+    viewModelOf(::MainViewModel)
 }

@@ -1,11 +1,9 @@
-import com.dobby.logs.CopyLogsInteractor
-import com.dobby.logs.LogsRepository
-import com.dobby.logs.LogsViewModel
+import com.dobby.feature.logging.presentation.LogsViewModel
+import com.dobby.feature.main.presentation.MainViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
-actual val logsModule = module {
-    factory { LogsRepository() }
-    factory { CopyLogsInteractor() }
+actual val sharedModule = module {
     singleOf(::LogsViewModel)
+    singleOf(::MainViewModel)
 }

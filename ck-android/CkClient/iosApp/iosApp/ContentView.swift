@@ -3,8 +3,10 @@ import SwiftUI
 import app
 
 struct ComposeView: UIViewControllerRepresentable {
+    
     func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.MainViewController()
+        let viewModel: MainViewModel = KoinKt.getMainViewModel()
+        return MainViewControllerKt.MainViewController(mainViewModel: viewModel)
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}

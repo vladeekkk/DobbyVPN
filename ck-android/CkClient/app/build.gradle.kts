@@ -2,10 +2,11 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.android.application)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.jetbrains.kotlin.serialization)
+    alias(libs.plugins.kotlinMultiplatform)
 }
 
 kotlin {
@@ -40,8 +41,6 @@ kotlin {
             implementation(libs.androidx.material3)
             implementation(libs.androidx.compiler)
             implementation(libs.kotlin.script.runtime)
-            implementation(libs.kotlinx.serialization.json)
-
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
 
@@ -55,6 +54,7 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.lifecycle.viewmodel.compose)
             implementation(libs.navigation.compose)
 
@@ -103,6 +103,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":awg"))
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(kotlin("script-runtime"))

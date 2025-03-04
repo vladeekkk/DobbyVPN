@@ -9,7 +9,7 @@
         tools:ignore="ProtectedPermissions" />
 
     <application
-        android:name="com.dobby.MyApp"
+        android:name="com.dobby.DobbyApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -18,9 +18,8 @@
         android:theme="@style/Theme.CkClient"
         tools:targetApi="31">
 
-        <!-- VPN Service -->
         <service
-            android:name=".MyVpnService"
+            android:name="com.dobby.feature.vpn_service.MyVpnService"
             android:exported="true"
             android:permission="android.permission.BIND_VPN_SERVICE">
             <intent-filter>
@@ -28,47 +27,16 @@
             </intent-filter>
         </service>
 
-        <!-- MainActivity -->
-        <activity
-            android:name=".cloak.MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.CkClient" />
 
-
-        <!-- MainActivity -->
         <activity
-            android:name="com.dobby.ui.DobbySocksActivity"
+            android:name="com.dobby.feature.main.ui.DobbySocksActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.CkClient">
+            android:theme="@style/Theme.CkClient"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- VpnControlActivity -->
-        <activity
-            android:name=".VpnControlActivity"
-            android:exported="true"
-            android:label="VPN Service Control"
-            android:theme="@style/Theme.CkClient"></activity>
-
-        <!-- LogActivity -->
-        <activity
-            android:name=".LogActivity"
-            android:exported="true"
-            android:label="Log Activity"
-            android:theme="@style/Theme.CkClient"></activity>
-
-        <!-- CloakOutlineActivity -->
-        <activity
-            android:name=".CloakOutlineActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.CkClient"></activity>
-
     </application>
-
 </manifest>

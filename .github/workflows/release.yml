@@ -108,7 +108,11 @@ jobs:
           # mv -f log-files/copy.go Cloak/internal/common/copy.go
           mkdir Cloak/internal/out
           cp log-files/logging.go Cloak/internal/out/logging.go
+          
           cp -r ck-client/Linux Cloak
+          cp ck-client/Linux/awgconf/*.go Cloak/Linux/
+          cp ck-client/Linux/awgconf/*.go Cloak/Linux/tunnel/
+          
           cp ck-client/app.go Cloak/Linux
           cp ck-client/ck-client.go Cloak/Linux
           cp ck-client/Icon.png Cloak/Linux
@@ -116,17 +120,26 @@ jobs:
           cp ck-client/outline_device.go Cloak/Linux
           cp ck-client/outline_packet_proxy.go Cloak/Linux
           cp ck-client/protector.go Cloak/Linux
+          
           cd Cloak/Linux
           go mod tidy
           cd ../..
       - name: Build linux ck-client
         run: |
           cd Cloak/Linux
+
+          cd tunnel/
+          go build -o tunnel-service .
+          cd ../
+
           go build -o dobbyvpn-linux-amd64 .
+          cd ../../
       - name: Make linux zip
         run: |
           mkdir dobbyvpn-linux-amd64
+          mkdir dobbyvpn-linux-amd64/libs/
           mv Cloak/Linux/dobbyvpn-linux-amd64 dobbyvpn-linux-amd64/dobbyvpn-linux-amd64
+          mv Cloak/Linux/tunnel/tunnel-service dobbyvpn-linux-amd64/libs/tunnel-service
           zip -r dobbyvpn-linux-amd64.zip dobbyvpn-linux-amd64
       - name: Upload Linux client
         uses: actions/upload-artifact@master

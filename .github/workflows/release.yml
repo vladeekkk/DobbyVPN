@@ -68,7 +68,6 @@ jobs:
           mkdir dobbyvpn-windows-amd64/libs
           mv tunnel-service.exe dobbyvpn-windows-amd64/libs/tunnel-service.exe
           mv dobbyvpn-windows.exe dobbyvpn-windows-amd64/dobbyvpn-windows.exe
-          cp wintun/bin/amd64/wintun.dll dobbyvpn-windows-amd64/libs/wintun.dll
           zip -r dobbyvpn-windows-amd64.zip dobbyvpn-windows-amd64.zip
       - name: Upload Windows client
         uses: actions/upload-artifact@master

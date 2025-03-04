@@ -46,8 +46,8 @@ jobs:
           cp ck-client/outline_packet_proxy.go Cloak/Windows
           cp ck-client/protector.go Cloak/Windows
           cd Cloak
-          git clone https://github.com/database64128/swgp-go.git
-          echo "replace github.com/database64128/swgp-go v0.0.0 => ./swgp-go" >> go.mod
+          git clone --branch v1.6.0 https://github.com/database64128/swgp-go.git
+          echo "replace github.com/database64128/swgp-go v1.6.0 => ./swgp-go" >> go.mod
           cd ..
           cd Cloak/Windows
           go mod tidy
@@ -107,8 +107,8 @@ jobs:
           cp ck-client/outline_packet_proxy.go Cloak/Linux
           cp ck-client/protector.go Cloak/Linux
           cd Cloak
-          git clone https://github.com/database64128/swgp-go.git
-          echo "replace github.com/database64128/swgp-go v0.0.0 => ./swgp-go" >> go.mod
+          git clone --branch v1.6.0 https://github.com/database64128/swgp-go.git
+          echo "replace github.com/database64128/swgp-go v1.6.0 => ./swgp-go" >> go.mod
           cd ..
           cd wireguard-go
           make
@@ -171,8 +171,8 @@ jobs:
           cp ck-client/outline_packet_proxy.go Cloak/MacOs
           cp ck-client/protector.go Cloak/MacOs
           cd Cloak
-          git clone https://github.com/database64128/swgp-go.git
-          echo "replace github.com/database64128/swgp-go v0.0.0 => ./swgp-go" >> go.mod
+          git clone --branch v1.6.0 https://github.com/database64128/swgp-go.git
+          echo "replace github.com/database64128/swgp-go v1.6.0 => ./swgp-go" >> go.mod
           cd ..
           cd Cloak/MacOs
           go mod tidy

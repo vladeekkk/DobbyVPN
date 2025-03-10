@@ -48,7 +48,7 @@ func StartCloakClient(localHost, localPort, config string, udp bool) {
 
 	client = exported_client.NewCkClient(rawConfig)
 
-	client.Connect()
+	client.Connect() // TODO: handle err
 }
 
 func StopCloakClient() {

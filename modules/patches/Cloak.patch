@@ -1,0 +1,386 @@
+diff --git a/exported_client/ck-client.go b/exported_client/ck-client.go
+new file mode 100644
+index 0000000..90bbb86
+--- /dev/null
++++ b/exported_client/ck-client.go
+@@ -0,0 +1,133 @@
++//go:build go1.11
++// +build go1.11
++
++package exported_client
++
++import (
++	"encoding/binary"
++	"github.com/cbeuw/Cloak/internal/client"
++	"github.com/cbeuw/Cloak/internal/common"
++	mux "github.com/cbeuw/Cloak/internal/multiplex"
++	log "github.com/sirupsen/logrus"
++	"net"
++	"sync"
++)
++
++type CkClient struct {
++	mu        sync.Mutex
++	connected bool
++	config    client.RawConfig
++	session   *mux.Session
++}
++
++type Config client.RawConfig
++
++func NewCkClient(config Config) *CkClient {
++	return &CkClient{config: client.RawConfig(config)}
++}
++
++func (c *CkClient) Connect() {
++	c.mu.Lock()
++	defer c.mu.Unlock()
++
++	if c.connected {
++		log.Infof("ck-client already connected")
++		return
++	}
++	c.connected = true
++	log.Infof("ck-client connected")
++
++	localConfig, remoteConfig, authInfo, err := c.config.ProcessRawConfig(common.RealWorldState)
++	if err != nil {
++		log.Fatal(err)
++	}
++
++	var adminUID []byte
++	if len(c.config.UID) != 0 {
++		adminUID = c.config.UID
++		log.Infof("ck-client: adminUID set to %s", adminUID)
++	}
++
++	var seshMaker func() *mux.Session
++
++	d := &net.Dialer{Control: protector, KeepAlive: remoteConfig.KeepAlive}
++
++	if adminUID != nil {
++		log.Infof("API base is %v", localConfig.LocalAddr)
++		authInfo.UID = adminUID
++		authInfo.SessionId = 0
++		remoteConfig.NumConn = 1
++
++		seshMaker = func() *mux.Session {
++			c.session = client.MakeSession(remoteConfig, authInfo, d)
++			return c.session
++		}
++	} else {
++		var network string
++		if authInfo.Unordered {
++			network = "UDP"
++		} else {
++			network = "TCP"
++		}
++		log.Infof("ck-client: Listening on %v %v for %v client", network, localConfig.LocalAddr, authInfo.ProxyMethod)
++		seshMaker = func() *mux.Session {
++			authInfo := authInfo // copy the struct because we are overwriting SessionId
++
++			randByte := make([]byte, 1)
++			common.RandRead(authInfo.WorldState.Rand, randByte)
++			authInfo.MockDomain = localConfig.MockDomainList[int(randByte[0])%len(localConfig.MockDomainList)]
++
++			// sessionID is usergenerated. There shouldn't be a security concern because the scope of
++			// sessionID is limited to its UID.
++			quad := make([]byte, 4)
++			common.RandRead(authInfo.WorldState.Rand, quad)
++			authInfo.SessionId = binary.BigEndian.Uint32(quad)
++			c.session = client.MakeSession(remoteConfig, authInfo, d)
++			return c.session
++		}
++	}
++
++	go func() {
++		if authInfo.Unordered {
++			acceptor := func() (*net.UDPConn, error) {
++				udpAddr, _ := net.ResolveUDPAddr("udp", localConfig.LocalAddr)
++				return net.ListenUDP("udp", udpAddr)
++			}
++
++			log.Infof("ck-client: start listening on UDP %v for %v client", localConfig.LocalAddr, authInfo.ProxyMethod)
++			client.RouteUDP(acceptor, localConfig.Timeout, remoteConfig.Singleplex, seshMaker)
++			log.Infof("ck-client: stop listening on UDP %v for %v client", localConfig.LocalAddr, authInfo.ProxyMethod)
++		} else {
++			listener, err := net.Listen("tcp", localConfig.LocalAddr)
++			if err != nil {
++				log.Fatal(err)
++			}
++
++			log.Infof("ck-client: start listening on TCP %v for %v client", localConfig.LocalAddr, authInfo.ProxyMethod)
++			client.RouteTCP(listener, localConfig.Timeout, remoteConfig.Singleplex, seshMaker)
++			log.Infof("ck-client: stop listening on TCP %v for %v client", localConfig.LocalAddr, authInfo.ProxyMethod)
++		}
++	}()
++}
++
++func (c *CkClient) Disconnect() {
++	c.mu.Lock()
++	defer c.mu.Unlock()
++
++	if !c.connected {
++		log.Println("ck-client not connected")
++		return
++	}
++	c.connected = false
++
++	if c.session != nil {
++		c.session.Close()
++		log.Printf("ck-client session closed")
++	}
++
++	log.Println("ck-client disconnected")
++}
++
++func InitLog() {
++	log_init()
++}
+diff --git a/exported_client/log.go b/exported_client/log.go
+new file mode 100644
+index 0000000..4dff150
+--- /dev/null
++++ b/exported_client/log.go
+@@ -0,0 +1,7 @@
++//go:build !android
++// +build !android
++
++package exported_client
++
++func log_init() {
++}
+diff --git a/exported_client/log_android.go b/exported_client/log_android.go
+new file mode 100644
+index 0000000..4f454ec
+--- /dev/null
++++ b/exported_client/log_android.go
+@@ -0,0 +1,85 @@
++// Copyright 2014 The Go Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style
++// license that can be found in the LICENSE file.
++
++//go:build android
++// +build android
++
++package exported_client
++
++/*
++To view the log output run:
++adb logcat GoLog:I *:S
++*/
++
++// Android redirects stdout and stderr to /dev/null.
++// As these are common debugging utilities in Go,
++// we redirect them to logcat.
++//
++// Unfortunately, logcat is line oriented, so we must buffer.
++
++/*
++#cgo LDFLAGS: -landroid -llog
++
++#include <android/log.h>
++#include <stdlib.h>
++#include <string.h>
++*/
++import "C"
++
++import (
++	"bufio"
++	"os"
++	"unsafe"
++
++	log "github.com/sirupsen/logrus"
++)
++
++var (
++	ctag = C.CString("cloak")
++)
++
++type infoWriter struct{}
++
++func (infoWriter) Write(p []byte) (n int, err error) {
++	cstr := C.CString(string(p))
++	C.__android_log_write(C.ANDROID_LOG_INFO, ctag, cstr)
++	C.free(unsafe.Pointer(cstr))
++	return len(p), nil
++}
++
++func lineLog(f *os.File, priority C.int) {
++	const logSize = 1024 // matches android/log.h.
++	r := bufio.NewReaderSize(f, logSize)
++	for {
++		line, _, err := r.ReadLine()
++		str := string(line)
++		if err != nil {
++			str += " " + err.Error()
++		}
++		cstr := C.CString(str)
++		C.__android_log_write(priority, ctag, cstr)
++		C.free(unsafe.Pointer(cstr))
++		if err != nil {
++			break
++		}
++	}
++}
++
++func log_init() {
++	log.SetOutput(infoWriter{})
++
++	r, w, err := os.Pipe()
++	if err != nil {
++		panic(err)
++	}
++	os.Stderr = w
++	go lineLog(r, C.ANDROID_LOG_ERROR)
++
++	r, w, err = os.Pipe()
++	if err != nil {
++		panic(err)
++	}
++	os.Stdout = w
++	go lineLog(r, C.ANDROID_LOG_INFO)
++}
+diff --git a/exported_client/protector.go b/exported_client/protector.go
+new file mode 100644
+index 0000000..b958c7e
+--- /dev/null
++++ b/exported_client/protector.go
+@@ -0,0 +1,10 @@
++//go:build !android
++// +build !android
++
++package exported_client
++
++import "syscall"
++
++func protector(string, string, syscall.RawConn) error {
++	return nil
++}
+diff --git a/exported_client/protector_android.go b/exported_client/protector_android.go
+new file mode 100644
+index 0000000..baefc6b
+--- /dev/null
++++ b/exported_client/protector_android.go
+@@ -0,0 +1,121 @@
++//go:build android
++// +build android
++
++package exported_client
++
++// Stolen from https://github.com/shadowsocks/overture/blob/shadowsocks/core/utils/utils_android.go
++
++/*
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <sys/time.h>
++#include <sys/types.h>
++#include <sys/socket.h>
++#include <sys/un.h>
++#include <sys/uio.h>
++
++#define ANCIL_FD_BUFFER(n)                                                     \
++  struct {                                                                     \
++    struct cmsghdr h;                                                          \
++    int fd[n];                                                                 \
++  }
++
++int ancil_send_fds_with_buffer(int sock, const int *fds, unsigned n_fds,
++                               void *buffer) {
++  struct msghdr msghdr;
++  char nothing = '!';
++  struct iovec nothing_ptr;
++  struct cmsghdr *cmsg;
++  int i;
++
++  nothing_ptr.iov_base = &nothing;
++  nothing_ptr.iov_len = 1;
++  msghdr.msg_name = NULL;
++  msghdr.msg_namelen = 0;
++  msghdr.msg_iov = &nothing_ptr;
++  msghdr.msg_iovlen = 1;
++  msghdr.msg_flags = 0;
++  msghdr.msg_control = buffer;
++  msghdr.msg_controllen = sizeof(struct cmsghdr) + sizeof(int) * n_fds;
++  cmsg = CMSG_FIRSTHDR(&msghdr);
++  cmsg->cmsg_len = msghdr.msg_controllen;
++  cmsg->cmsg_level = SOL_SOCKET;
++  cmsg->cmsg_type = SCM_RIGHTS;
++  for (i = 0; i < n_fds; i++)
++    ((int *)CMSG_DATA(cmsg))[i] = fds[i];
++  return (sendmsg(sock, &msghdr, 0) >= 0 ? 0 : -1);
++}
++
++int ancil_send_fd(int sock, int fd) {
++  ANCIL_FD_BUFFER(1) buffer;
++
++  return (ancil_send_fds_with_buffer(sock, &fd, 1, &buffer));
++}
++
++void set_timeout(int sock) {
++  struct timeval tv;
++  tv.tv_sec = 3;
++  tv.tv_usec = 0;
++  setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,
++             sizeof(struct timeval));
++  setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv,
++             sizeof(struct timeval));
++}
++*/
++import "C"
++
++import (
++	"syscall"
++
++	log "github.com/sirupsen/logrus"
++)
++
++// In Android, once an app starts the VpnService, all outgoing traffic are routed by the system
++// to the VPN app. In our case, the VPN app is ss-local. Our outgoing traffic to ck-server
++// will be routed back to ss-local which creates an infinite loop.
++//
++// The Android system provides an API VpnService.protect(int socketFD)
++// This tells the system to bypass the socket around the VPN.
++func protector(network string, address string, c syscall.RawConn) error {
++	log.Println("Using Android VPN mode.")
++	fn := func(s uintptr) {
++		fd := int(s)
++		path := "protect_path"
++
++		socket, err := syscall.Socket(syscall.AF_UNIX, syscall.SOCK_STREAM, 0)
++		if err != nil {
++			log.Println(err)
++			return
++		}
++
++		defer syscall.Close(socket)
++
++		C.set_timeout(C.int(socket))
++
++		err = syscall.Connect(socket, &syscall.SockaddrUnix{Name: path})
++		if err != nil {
++			log.Println(err)
++			return
++		}
++
++		C.ancil_send_fd(C.int(socket), C.int(fd))
++
++		dummy := []byte{1}
++		n, err := syscall.Read(socket, dummy)
++		if err != nil {
++			log.Println(err)
++			return
++		}
++		if n != 1 {
++			log.Println("Failed to protect fd: ", fd)
++			return
++		}
++	}
++
++	if err := c.Control(fn); err != nil {
++		return err
++	}
++
++	return nil
++}

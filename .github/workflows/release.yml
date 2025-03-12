@@ -22,11 +22,13 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.22.x"
+
       - name: Install dependencies
         run: |
           cd src
           cd ..
-      - name: Clone Cloak and copying ck-client
+
+      - name: Install submodules
         run: |
           git submodule add https://github.com/cbeuw/Cloak
           git submodule init
@@ -35,6 +37,9 @@ jobs:
           # mv -Force log-files/connector.go Cloak/internal/client/connector.go
           # mv -Force log-files/TLS.go Cloak/internal/client/TLS.go
           # mv -Force log-files/copy.go Cloak/internal/common/copy.go
+
+      - name: Clone ck-client
+        run: |
           mkdir Cloak/internal/out
           cp log-files/logging.go Cloak/internal/out/logging.go
           cp -r ck-client/Windows Cloak
@@ -46,34 +51,40 @@ jobs:
           cp ck-client/outline_device.go Cloak/Windows
           cp ck-client/outline_packet_proxy.go Cloak/Windows
           cp ck-client/protector.go Cloak/Windows
+
+      - name: Install Go dependencies
+        run: |
           cd Cloak/Windows
           go get github.com/amnezia-vpn/amneziawg-windows/tunnel@v0.1.4-0.20240526104134-db18f2297e5e
           go mod tidy
           go install fyne.io/fyne/v2/cmd/fyne@latest
           cd ../..
-      - name: Build windows ck-client
+
+      - name: Build Windows tunnel service
         run: |
           cd Cloak/Windows/WindowsTunnelService
           go build -o tunnel-service.exe .
           cd ../../../
+
+      - name: Build windows client
+        run: |
           cd Cloak/Windows
           fyne package -os windows
           cd ../..
-          mkdir libs
-          cp Cloak/Windows/WindowsTunnelService/tunnel-service.exe tunnel-service.exe
-          cp Cloak/Windows/Windows.exe dobbyvpn-windows.exe
+
       - name: Make Windows zip
         run: |
           mkdir dobbyvpn-windows-amd64
           mkdir dobbyvpn-windows-amd64/libs
-          mv tunnel-service.exe dobbyvpn-windows-amd64/libs/tunnel-service.exe
-          mv dobbyvpn-windows.exe dobbyvpn-windows-amd64/dobbyvpn-windows.exe
-          zip -r dobbyvpn-windows-amd64.zip dobbyvpn-windows-amd64.zip
+          cp Cloak/Windows/WindowsTunnelService/tunnel-service.exe dobbyvpn-windows-amd64/libs/tunnel-service.exe
+          cp Cloak/Windows/Windows.exe dobbyvpn-windows-amd64/dobbyvpn-windows.exe
+          tar.exe -cavf dobbyvpn-windows-amd64.tar.gz dobbyvpn-windows-amd64/
+
       - name: Upload Windows client
         uses: actions/upload-artifact@master
         with:
-          name: dobbyvpn-windows-amd64.zip
-          path: dobbyvpn-windows-amd64.zip
+          name: dobbyvpn-windows-amd64.tar.gz
+          path: dobbyvpn-windows-amd64.tar.gz
 
   linux_build:
     runs-on: ubuntu-latest

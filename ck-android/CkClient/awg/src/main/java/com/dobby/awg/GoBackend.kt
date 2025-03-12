@@ -16,8 +16,6 @@ class GoBackend {
     companion object {
         init {
             System.loadLibrary("wg-go")
-            System.loadLibrary("wg")
-            System.loadLibrary("wg-quick")
         }
     }
 }

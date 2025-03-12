@@ -72,11 +72,17 @@ jobs:
           fyne package -os windows
           cd ../..
 
+      - name: Install WinTun driver
+        run: |
+          curl.exe -v https://www.wintun.net/builds/wintun-0.14.1.zip --output wintun-0.14.1.zip
+          powershell Expand-Archive -Force wintun-0.14.1.zip wintun-0.14.1
+
       - name: Make Windows zip
         run: |
           mkdir dobbyvpn-windows-amd64
           mkdir dobbyvpn-windows-amd64/libs
           cp Cloak/Windows/WindowsTunnelService/tunnel-service.exe dobbyvpn-windows-amd64/libs/tunnel-service.exe
+          cp wintun-0.14.1/wintun/bin/amd64/wintun.dll wintun-0.14.1/wintun/bin/amd64/wintun.dll
           cp Cloak/Windows/Windows.exe dobbyvpn-windows-amd64/dobbyvpn-windows.exe
           tar.exe -cavf dobbyvpn-windows-amd64.tar.gz dobbyvpn-windows-amd64/
 

@@ -45,6 +45,7 @@ kotlin {
             implementation(libs.koin.androidx.compose)
 
             implementation(files("../libs/cloak_outline.aar"))
+            implementation(files("../libs/awg.aar"))
         }
 
         commonMain.dependencies {
@@ -103,7 +104,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":awg"))
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(kotlin("script-runtime"))

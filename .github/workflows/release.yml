@@ -78,13 +78,13 @@ jobs:
           mkdir dobbyvpn-windows-amd64/libs
           cp Cloak/Windows/WindowsTunnelService/tunnel-service.exe dobbyvpn-windows-amd64/libs/tunnel-service.exe
           cp Cloak/Windows/Windows.exe dobbyvpn-windows-amd64/dobbyvpn-windows.exe
-          tar.exe -cavf dobbyvpn-windows-amd64.tar.gz dobbyvpn-windows-amd64/
+          Compress-Archive dobbyvpn-windows-amd64 dobbyvpn-windows-amd64.zip
 
       - name: Upload Windows client
         uses: actions/upload-artifact@master
         with:
-          name: dobbyvpn-windows-amd64.tar.gz
-          path: dobbyvpn-windows-amd64.tar.gz
+          name: dobbyvpn-windows-amd64.zip
+          path: dobbyvpn-windows-amd64.zip
 
   linux_build:
     runs-on: ubuntu-latest

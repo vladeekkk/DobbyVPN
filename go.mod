@@ -2,15 +2,12 @@ module dobby
 
 go 1.23.2
 
-replace github.com/cbeuw/Cloak => ./modules/Cloak
-
 require fyne.io/fyne/v2 v2.5.0
 
 require (
 	fyne.io/systray v1.11.0 // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
 	github.com/amnezia-vpn/amneziawg-go v0.2.12 // indirect
-	github.com/cbeuw/Cloak v1.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
@@ -30,7 +27,7 @@ require (
 	github.com/rymdport/portal v0.2.2 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/tevino/abool/v2 v2.1.0 // indirect
 	github.com/yuin/goldmark v1.7.1 // indirect
 	golang.org/x/crypto v0.23.0 // indirect

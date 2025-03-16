@@ -1,11 +1,12 @@
 import SwiftUI
 import app
+import CommonDI
 
 @main
 struct iOSApp: App {
     
     init() {
-        StartDIKt.startDI(nativeModules: [nativeModule]) {_ in }
+        StartDIKt.startDI(nativeModules: [NativeModuleHolder.shared]) {_ in }
     }
     
     var body: some Scene {

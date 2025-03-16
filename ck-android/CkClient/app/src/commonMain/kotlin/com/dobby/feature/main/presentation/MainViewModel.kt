@@ -52,7 +52,13 @@ class MainViewModel(
         viewModelScope.launch {
             when (ConnectionStateRepository.isConnected()) {
                 true -> stopVpnService()
-                false -> checkVpnPermissionEvents.emit(Unit)
+                false -> {
+                    if (isPermissionCheckNeeded) {
+                        checkVpnPermissionEvents.emit(Unit)
+                    } else {
+                        startVpnService()
+                    }
+                }
             }
         }
     }

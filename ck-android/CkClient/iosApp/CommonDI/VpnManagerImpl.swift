@@ -17,22 +17,18 @@ class VpnManagerImpl: VpnManager {
 
         getOrCreateManager { (manager, error) in
             if (manager?.connection.status == .connected) {
-                NSLog("pepetag LETS GO? true")
                 self.state = manager?.connection.status ?? .invalid
                 connectionRepository.update(isConnected: true)
                 self.vpnManager = manager
             } else {
                 self.state = manager?.connection.status ?? .invalid
-                NSLog("pepetag LETS GO? false")
                 connectionRepository.update(isConnected: false)
             }
-            
         }
         
         observer = NotificationCenter.default.addObserver(forName: .NEVPNStatusDidChange, object: nil, queue: nil) { [weak self] notification in
             guard let connection = notification.object as? NEVPNConnection else { return }
             self?.state = connection.status
-            NSLog("pepetag LETS GOOO \(self?.state.rawValue.description ?? "nil")")
             if (connection.status == .connected) {
                 if (self?.vpnManager == nil) {
                     self?.getOrCreateManager { (manager, error) in

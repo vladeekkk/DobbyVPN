@@ -54,7 +54,7 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     private func startReadPacketsFromDevice() {
         NSLog("Starting to read packets from device...")
         while true {
-            let data = device.read()
+            let data = device.readFromDevice()
             let packets: [Data] = [data]
             let protocols: [NSNumber] = [NSNumber(value: AF_INET)] // IPv4
 
@@ -103,9 +103,10 @@ class DeviceFacade {
         }
     }
     
-    func read() -> Data {
+    func readFromDevice() -> Data {
         do {
-            return try device?.read()!
+            let data = try device?.read()
+            return data!
         } catch let error {
             NSLog("error is \(error)")
             return Data()

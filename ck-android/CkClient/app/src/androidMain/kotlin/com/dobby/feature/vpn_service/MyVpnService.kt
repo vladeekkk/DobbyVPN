@@ -85,6 +85,8 @@ class MyVpnService : VpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Logger.log("!!! onStartCommand: ${dobbyConfigsRepository.getVpnInterface()}")
+
         when (dobbyConfigsRepository.getVpnInterface()) {
             VpnInterface.CLOAK_OUTLINE -> {
                 val connectionFlag = dobbyConfigsRepository.getIsOutlineEnabled()

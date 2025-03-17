@@ -1,5 +1,9 @@
 package com.dobby.feature.main.presentation
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dobby.feature.main.domain.AwgManager
@@ -19,14 +23,26 @@ class MainViewModel(
     private val vpnManager: VpnManager,
     private val awgManager: AwgManager,
 ) : ViewModel() {
-
+    //region Cloak states
     private val _uiState = MutableStateFlow(MainUiState())
 
     val uiState: StateFlow<MainUiState> = _uiState
 
     val checkVpnPermissionEvents = MutableSharedFlow<Unit>()
+    //endregion
+
+    //region AmneziaWG states
+    val awgVersion: String
+
+    var awgConfigState: MutableState<String>
+        private set
+
+    var awgConnectionState: MutableState<AwgConnectionState>
+        private set
+    //endregion
 
     init {
+        // Cloak init
         _uiState.tryEmit(
             MainUiState(
                 cloakJson = configsRepository.getCloakConfig(),
@@ -41,8 +57,19 @@ class MainViewModel(
                 _uiState.tryEmit(newState)
             }
         }
+
+        // AmneziaWG init
+        awgVersion = awgManager.getAwgVersion()
+
+        val awgConfigStoredValue = configsRepository.getAwgConfig()
+        val awgConnectionStoredValue =
+            if (configsRepository.getIsAmneziaWGEnabled()) AwgConnectionState.ON
+            else AwgConnectionState.OFF
+        awgConfigState = mutableStateOf(awgConfigStoredValue)
+        awgConnectionState = mutableStateOf(awgConnectionStoredValue)
     }
 
+    //region Cloak functions
     fun onConnectionButtonClicked(
         cloakJson: String?,
         outlineKey: String,
@@ -88,15 +115,22 @@ class MainViewModel(
         configsRepository.setIsOutlineEnabled(false)
         vpnManager.stop()
     }
+    //endregion
 
-    fun getAwgVersion(): String = awgManager.getAwgVersion()
+    //region AmneziaWG functions
+    fun onAwgConfigEdit(newConfig: String) {
+        var configDelegate by awgConfigState
+        configsRepository.setAwgConfig(newConfig)
+        configDelegate = newConfig
+    }
 
-    fun onAwgConnect(config: String) {
+    fun onAwgConnect() {
         viewModelScope.launch {
             checkVpnPermissionEvents.emit(Unit)
         }
 
-        configsRepository.setAwgConfig(config)
+        var connectionStateDelegate by awgConnectionState
+        connectionStateDelegate = AwgConnectionState.ON
         configsRepository.setIsAmneziaWGEnabled(true)
         configsRepository.setVpnInterface(VpnInterface.AMNEZIA_WG)
         awgManager.onAwgConnect()
@@ -107,9 +141,11 @@ class MainViewModel(
             checkVpnPermissionEvents.emit(Unit)
         }
 
-        configsRepository.setAwgConfig(null)
+        var connectionStateDelegate by awgConnectionState
+        connectionStateDelegate = AwgConnectionState.OFF
         configsRepository.setIsAmneziaWGEnabled(false)
         configsRepository.setVpnInterface(VpnInterface.AMNEZIA_WG)
         awgManager.onAwgDisconnect()
     }
+    //endregion
 }

@@ -20,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.dobby.feature.main.presentation.MainViewModel
 
 const val INITIAL_CONTENT = """[Interface]
@@ -45,9 +44,8 @@ PersistentKeepalive = 60"""
 
 @Composable
 fun AmneziaWGApp(
-    modifier: Modifier,
-    navController: NavController,
     viewModel: MainViewModel = viewModel(),
+    modifier: Modifier = Modifier,
 ) {
     var content by remember { mutableStateOf(INITIAL_CONTENT) }
     var status by remember { mutableStateOf("") }

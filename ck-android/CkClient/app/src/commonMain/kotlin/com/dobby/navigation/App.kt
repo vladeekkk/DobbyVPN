@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import com.dobby.feature.logging.presentation.LogsViewModel
 import com.dobby.feature.logging.ui.LogScreen
 import com.dobby.feature.main.presentation.MainViewModel
+import com.dobby.feature.main.ui.AwgScreen
 import com.dobby.feature.main.ui.DobbySocksScreen
 
 @Composable
@@ -75,7 +76,7 @@ fun App(
                     DobbySocksScreen(mainViewModel)
                 }
                 composable<AmneziaWGScreen> {
-                    AmneziaWGApp(mainViewModel)
+                    AwgScreen(mainViewModel)
                 }
                 composable<LogsScreen> {
                     LogScreen(logsViewModel)

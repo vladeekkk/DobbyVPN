@@ -1,4 +1,4 @@
-package com.dobby.navigation
+package com.dobby.feature.main.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,7 +43,7 @@ AllowedIPs = 0.0.0.0/0
 PersistentKeepalive = 60"""
 
 @Composable
-fun AmneziaWGApp(
+fun AwgScreen(
     viewModel: MainViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {
@@ -54,7 +54,7 @@ fun AmneziaWGApp(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center
     ) {
-        Text("AmneziaWG ${viewModel.getAwgVersion()}")
+        Text("AmneziaWG ${viewModel.getAwgVersion()}", modifier = Modifier.padding(8.dp))
 
         Spacer(modifier = Modifier.height(16.dp))
 

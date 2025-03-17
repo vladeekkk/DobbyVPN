@@ -6,13 +6,15 @@ import android.net.Network
 import android.net.VpnService.Builder
 import android.os.Build
 import android.util.Log
+import com.dobby.feature.logging.Logger
 import com.dobby.feature.vpn_service.common.reservedBypassSubnets
-import com.dobby.util.Logger
 
-class DobbyVpnInterfaceFactory {
+class DobbyVpnInterfaceFactory(
+    private val logger: Logger
+) {
 
     fun create(context: Context, vpnService: MyVpnService): Builder {
-        Logger.log("Creating VPN Interface")
+        logger.log("Creating VPN Interface")
         val builder = vpnService.Builder()
             .setSession("Outline")
             .setMtu(1500)
@@ -20,7 +22,7 @@ class DobbyVpnInterfaceFactory {
             .addDnsServer("1.1.1.1")
             .addDisallowedApplication(context.packageName)
 
-        Logger.log("VPN interface created: address is 10.111.222.1")
+        logger.log("VPN interface created: address is 10.111.222.1")
 
         val dnsServers = getDnsServers(context)
         val dns_server = dnsServers.get(0)

@@ -65,9 +65,7 @@ fun AwgScreen(
                 containerColor = Color.Black,
                 contentColor = Color.White
             ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 86.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
 
             when (viewModel.awgConnectionState.value) {

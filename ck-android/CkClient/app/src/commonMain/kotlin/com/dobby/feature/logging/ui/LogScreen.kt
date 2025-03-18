@@ -1,6 +1,5 @@
 package com.dobby.feature.logging.ui
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,9 +47,8 @@ fun LogScreen(
             shape = RoundedCornerShape(6.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Black,
-                contentColor = Color.White
             ),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
         ) {
             Text("Copy logs to clipboard")
         }
@@ -62,10 +60,20 @@ fun LogScreen(
                 containerColor = Color.White,
                 contentColor = Color.Black
             ),
-            modifier = Modifier.fillMaxWidth()
-                .border(1.dp, Color.Black, shape = RoundedCornerShape(6.dp)),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
         ) {
             Text("Clear Logs")
+        }
+
+        Button(
+            onClick = { viewModel.reloadLogs() },
+            shape = RoundedCornerShape(6.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Gray
+            ),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 2.dp)
+        ) {
+            Text("Reload Logs")
         }
 
         LazyColumn(

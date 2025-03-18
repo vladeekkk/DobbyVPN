@@ -10,10 +10,8 @@ import androidx.activity.result.contract.ActivityResultContracts.StartActivityFo
 import androidx.lifecycle.lifecycleScope
 import com.dobby.common.ui.theme.CkClientTheme
 import com.dobby.feature.logging.presentation.LogsViewModel
-import com.dobby.feature.main.domain.ConnectionStateRepository
 import com.dobby.feature.main.presentation.MainViewModel
 import com.dobby.navigation.App
-import com.dobby.util.Logger
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -27,9 +25,6 @@ class DobbySocksActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        Logger.init(this)
-        ConnectionStateRepository.init(false)
 
         initVpnPermissionLauncher()
         lifecycleScope.launch {

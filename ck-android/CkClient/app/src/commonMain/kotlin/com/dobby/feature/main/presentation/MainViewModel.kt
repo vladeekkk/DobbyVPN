@@ -15,6 +15,7 @@ import com.dobby.feature.main.ui.MainUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -28,7 +29,8 @@ class MainViewModel(
 
     val uiState: StateFlow<MainUiState> = _uiState
 
-    val checkVpnPermissionEvents = MutableSharedFlow<Unit>()
+    private val _checkVpnPermissionEvents = MutableSharedFlow<Unit>()
+    val checkVpnPermissionEvents = _checkVpnPermissionEvents.asSharedFlow()
     //endregion
 
     //region AmneziaWG states
@@ -46,11 +48,11 @@ class MainViewModel(
         _uiState.tryEmit(
             MainUiState(
                 cloakJson = configsRepository.getCloakConfig(),
-                outlineKey = configsRepository.getOutlineKey()
+                outlineKey = configsRepository.getOutlineKey(),
+                isCloakEnabled = configsRepository.getIsCloakEnabled()
             )
         )
 
-        ConnectionStateRepository.init(false)
         viewModelScope.launch {
             connectionStateRepository.observe().collect { isConnected ->
                 val newState = _uiState.value.copy(isConnected = isConnected)
@@ -81,7 +83,7 @@ class MainViewModel(
                 true -> stopVpnService()
                 false -> {
                     if (isPermissionCheckNeeded) {
-                        checkVpnPermissionEvents.emit(Unit)
+                        _checkVpnPermissionEvents.emit(Unit)
                     } else {
                         startVpnService()
                     }
@@ -126,7 +128,7 @@ class MainViewModel(
 
     fun onAwgConnect() {
         viewModelScope.launch {
-            checkVpnPermissionEvents.emit(Unit)
+            _checkVpnPermissionEvents.emit(Unit)
         }
 
         var connectionStateDelegate by awgConnectionState
@@ -137,9 +139,6 @@ class MainViewModel(
     }
 
     fun onAwgDisconnect() {
-        viewModelScope.launch {
-            checkVpnPermissionEvents.emit(Unit)
-        }
 
         var connectionStateDelegate by awgConnectionState
         connectionStateDelegate = AwgConnectionState.OFF

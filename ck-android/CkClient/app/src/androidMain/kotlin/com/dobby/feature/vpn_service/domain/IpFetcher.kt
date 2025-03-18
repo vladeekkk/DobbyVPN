@@ -1,13 +1,15 @@
 package com.dobby.feature.vpn_service.domain
 
-import com.dobby.util.Logger
+import com.dobby.feature.logging.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.net.HttpURLConnection
 import java.net.URL
 
-class IpFetcher {
+class IpFetcher(
+    private val logger: Logger
+) {
 
     suspend fun fetchIp(): String? {
         return withContext(Dispatchers.IO) {
@@ -31,11 +33,11 @@ class IpFetcher {
                 }
 
                 if (result == null) {
-                    Logger.log("MyVpnService: Timeout or empty response while fetching IP")
+                    logger.log("VpnService: Timeout or empty response while fetching IP")
                 }
                 result
             } catch (e: Exception) {
-                Logger.log("Error fetching IP: ${e.message}")
+                logger.log("Error fetching IP: ${e.message}")
                 null
             }
         }

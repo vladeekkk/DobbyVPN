@@ -6,9 +6,9 @@ import android.os.Build
 import android.system.OsConstants
 import com.dobby.awg.config.BadConfigException
 import com.dobby.awg.config.Config
-import com.dobby.util.Logger
+import com.dobby.feature.logging.Logger
 
-class TunnelManager(private val service: VpnService) {
+class TunnelManager(private val service: VpnService, private val logger: Logger) {
 
     private val tunnelName = "awg0"
     var tunnelData: TunnelData =
@@ -19,7 +19,7 @@ class TunnelManager(private val service: VpnService) {
             try {
                 Config.parse(stringConfig.byteInputStream())
             } catch (e: BadConfigException) {
-                Logger.log("[$tunnelName] Failed: bad config: ${e.message}")
+                logger.log("[$tunnelName] Failed: bad config: ${e.message}")
 
                 return
             }
@@ -27,19 +27,19 @@ class TunnelManager(private val service: VpnService) {
 
         if (state == TunnelState.UP) {
             if (config == null) {
-                Logger.log("[$tunnelName] Failed: Empty config")
+                logger.log("[$tunnelName] Failed: Empty config")
 
                 return
             }
 
             if (VpnService.prepare(service) != null) {
-                Logger.log("[$tunnelName] Failed: VPN is not authorised")
+                logger.log("[$tunnelName] Failed: VPN is not authorised")
 
                 return
             }
 
             if (tunnelData.currentTunnelHandle != -1) {
-                Logger.log("[$tunnelName] Failed: Tunnel already up")
+                logger.log("[$tunnelName] Failed: Tunnel already up")
 
                 return
             }
@@ -50,21 +50,21 @@ class TunnelManager(private val service: VpnService) {
             // Create the vpn tunnel with android API
             val builder: Builder = service.Builder()
 
-            Logger.log("[$tunnelName] New VPN service session")
+            logger.log("[$tunnelName] New VPN service session")
             builder.setSession(tunnelName)
 
             for (addr in config.intface.addresses) {
-                Logger.log("[$tunnelName] Add address ${addr.address} ${addr.mask}")
+                logger.log("[$tunnelName] Add address ${addr.address} ${addr.mask}")
                 builder.addAddress(addr.address, addr.mask)
             }
 
             for (addr in config.intface.dnsServers) {
-                Logger.log("[$tunnelName] Add dns $addr")
+                logger.log("[$tunnelName] Add dns $addr")
                 builder.addDnsServer(addr)
             }
 
             for (dnsSearchDomain in config.intface.dnsSearchDomains) {
-                Logger.log("[$tunnelName] Add dns search domain $dnsSearchDomain")
+                logger.log("[$tunnelName] Add dns search domain $dnsSearchDomain")
                 builder.addSearchDomain(dnsSearchDomain)
             }
 
@@ -74,7 +74,7 @@ class TunnelManager(private val service: VpnService) {
                     if (addr.mask == 0)
                         sawDefaultRoute = true
 
-                    Logger.log("[$tunnelName] Add route ${addr.address} ${addr.mask}")
+                    logger.log("[$tunnelName] Add route ${addr.address} ${addr.mask}")
                     builder.addRoute(addr.address, addr.mask)
                 }
             }
@@ -85,7 +85,7 @@ class TunnelManager(private val service: VpnService) {
                 builder.allowFamily(OsConstants.AF_INET6)
             }
 
-            Logger.log("[$tunnelName] Set MTU ${config.intface.mtu.orElse(1280)}")
+            logger.log("[$tunnelName] Set MTU ${config.intface.mtu.orElse(1280)}")
             builder.setMtu(config.intface.mtu.orElse(1280))
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
@@ -97,11 +97,11 @@ class TunnelManager(private val service: VpnService) {
             builder.establish().use { tun ->
                 currentTunnelHandle =
                     GoBackendWrapper.awgTurnOn(tunnelName, tun!!.detachFd(), goConfig)
-                Logger.log("[$tunnelName] Got tunnel handle $currentTunnelHandle")
+                logger.log("[$tunnelName] Got tunnel handle $currentTunnelHandle")
             }
 
             if (currentTunnelHandle < 0) {
-                Logger.log("[$tunnelName] tunnel activation failed")
+                logger.log("[$tunnelName] tunnel activation failed")
 
                 return
             }
@@ -112,7 +112,7 @@ class TunnelManager(private val service: VpnService) {
             service.protect(GoBackendWrapper.awgGetSocketV6(currentTunnelHandle))
         } else {
             if (tunnelData.currentTunnelHandle == -1) {
-                Logger.log("[$tunnelName] Failed: tunnel is off")
+                logger.log("[$tunnelName] Failed: tunnel is off")
 
                 return
             }

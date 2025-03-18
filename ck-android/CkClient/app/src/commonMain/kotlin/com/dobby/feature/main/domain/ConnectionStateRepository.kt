@@ -13,17 +13,11 @@ object ConnectionStateRepository {
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    private var isInitialized = false
-
-    fun init(value: Boolean) {
-        if (!isInitialized) {
-            connectionFlow.tryEmit(value)
-            isInitialized = true
-        }
+    init {
+        connectionFlow.tryEmit(false)
     }
 
     fun update(isConnected: Boolean) {
-        isInitialized = true
         connectionFlow.tryEmit(isConnected)
     }
 

@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"github.com/cbeuw/Cloak/exported_client"
 	log "github.com/sirupsen/logrus"
+	"go_client/common"
 	"sync"
 )
+
+const Name = "cloak"
 
 var (
 	client *exported_client.CkClient
@@ -28,10 +31,10 @@ func StartCloakClient(localHost, localPort, config string, udp bool) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if client != nil {
-		log.Errorf("start cloak client failed: cloak client already started")
-		return
-	}
+	//if client != nil {
+	//	log.Errorf("start cloak client failed: cloak client already started")
+	//	return
+	//}
 
 	var rawConfig exported_client.Config
 	err := json.Unmarshal([]byte(config), &rawConfig)
@@ -48,6 +51,7 @@ func StartCloakClient(localHost, localPort, config string, udp bool) {
 
 	client = exported_client.NewCkClient(rawConfig)
 
+	common.Client.SetVpnClient(Name, client)
 	client.Connect() // TODO: handle err
 }
 

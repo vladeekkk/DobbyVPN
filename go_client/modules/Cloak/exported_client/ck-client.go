@@ -26,20 +26,20 @@ func NewCkClient(config Config) *CkClient {
 	return &CkClient{config: client.RawConfig(config)}
 }
 
-func (c *CkClient) Connect() {
+func (c *CkClient) Connect() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if c.connected {
-		log.Infof("ck-client already connected")
-		return
-	}
+	//if c.connected {
+	//	log.Infof("ck-client already connected")
+	//	return
+	//}
 	c.connected = true
 	log.Infof("ck-client connected")
 
 	localConfig, remoteConfig, authInfo, err := c.config.ProcessRawConfig(common.RealWorldState)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	var adminUID []byte
@@ -100,7 +100,7 @@ func (c *CkClient) Connect() {
 		} else {
 			listener, err := net.Listen("tcp", localConfig.LocalAddr)
 			if err != nil {
-				log.Fatal(err)
+				log.Error(err)
 			}
 
 			log.Infof("ck-client: start listening on TCP %v for %v client", localConfig.LocalAddr, authInfo.ProxyMethod)
@@ -108,15 +108,17 @@ func (c *CkClient) Connect() {
 			log.Infof("ck-client: stop listening on TCP %v for %v client", localConfig.LocalAddr, authInfo.ProxyMethod)
 		}
 	}()
+
+	return nil
 }
 
-func (c *CkClient) Disconnect() {
+func (c *CkClient) Disconnect() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	if !c.connected {
 		log.Println("ck-client not connected")
-		return
+		return nil
 	}
 	c.connected = false
 
@@ -126,6 +128,16 @@ func (c *CkClient) Disconnect() {
 	}
 
 	log.Println("ck-client disconnected")
+
+	return nil
+}
+
+func (c *CkClient) Refresh() error {
+	if err := c.Disconnect(); err != nil { // TODO: handle error with more detail
+		return err
+	}
+
+	return c.Connect()
 }
 
 func InitLog() {

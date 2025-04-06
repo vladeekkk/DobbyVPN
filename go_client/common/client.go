@@ -49,4 +49,16 @@ func (c *CommonClient) SetVpnClient(clientName string, client vpnClient) {
 	c.vpnClients[clientName] = client
 }
 
-var Client CommonClient
+func (c *CommonClient) GetClientNames() []string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	var names []string
+	for name := range c.vpnClients {
+		names = append(names, name)
+	}
+	return names
+}
+
+var Client = &CommonClient{
+	vpnClients: make(map[string]vpnClient),
+}

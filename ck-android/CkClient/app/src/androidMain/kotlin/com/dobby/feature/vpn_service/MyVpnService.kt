@@ -32,12 +32,16 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.nio.ByteBuffer
 
+private const val IS_FROM_UI = "isLaunchedFromUi"
+
 class MyVpnService : VpnService() {
 
     companion object {
 
         fun createIntent(context: Context): Intent {
-            return Intent(context, MyVpnService::class.java)
+            return Intent(context, MyVpnService::class.java).apply {
+                putExtra(IS_FROM_UI, true)
+            }
         }
     }
 
@@ -65,8 +69,6 @@ class MyVpnService : VpnService() {
                 if (ipAddress != null) {
                     logger.log("Tunnel: response from curl: $ipAddress")
                     setupVpn()
-                    //checkServerAvailability(iqAddress)
-
                 } else {
                     logger.log("Tunnel: Failed to fetch IP, cancelling VPN setup.")
                     stopSelf()
@@ -76,43 +78,12 @@ class MyVpnService : VpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (dobbyConfigsRepository.getVpnInterface()) {
-            VpnInterface.CLOAK_OUTLINE -> {
-
-                // should make sense, TODO test when turning on VPN via settings (not from ui)
-                if (dobbyConfigsRepository.getIsOutlineEnabled()) {
-                    val apiKey = dobbyConfigsRepository.getOutlineKey()
-                    logger.log("!!! Starting connecting Outline")
-                    outlineLibFacade.init(apiKey)
-                    enableCloakIfNeeded()
-                } else {
-                    logger.log("!!! Starting disconnecting Outline")
-                    vpnInterface?.close()
-                    ConnectionStateRepository.update(isConnected = false) // todo move somewhere
-                    stopSelf()
-
-                }
-                return START_STICKY
-            }
-
-            VpnInterface.AMNEZIA_WG -> {
-                if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
-                    logger.log("!!! Starting AmneziaWG")
-                    val stringConfig = dobbyConfigsRepository.getAwgConfig()
-                    val state = if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
-                        TunnelState.UP
-                    } else {
-                        TunnelState.DOWN
-                    }
-                    tunnelManager.updateState(stringConfig, state)
-                } else {
-                    logger.log("!!! Stopping AmneziaWG")
-                    tunnelManager.updateState(null, TunnelState.DOWN)
-                }
-
-                return START_STICKY
-            }
+        val isServiceStartedFromUi = intent?.getBooleanExtra(IS_FROM_UI, false) ?: false
+        when(dobbyConfigsRepository.getVpnInterface()) {
+            VpnInterface.CLOAK_OUTLINE -> startCloakOutline(isServiceStartedFromUi)
+            VpnInterface.AMNEZIA_WG -> startAwg()
         }
+        return START_STICKY
     }
 
     override fun onDestroy() {
@@ -127,17 +98,52 @@ class MyVpnService : VpnService() {
         tunnelManager.updateState(null, TunnelState.DOWN)
     }
 
-    private fun enableCloakIfNeeded() {
-        val shouldEnableCloak = dobbyConfigsRepository.getIsCloakEnabled()
-        val cloakConfig = dobbyConfigsRepository.getCloakConfig()
-        if (shouldEnableCloak) {
+    private fun startCloakOutline(isServiceStartedFromUi: Boolean) {
+        val shouldTurnOutlineOn = dobbyConfigsRepository.getIsOutlineEnabled()
+        if (shouldTurnOutlineOn || !isServiceStartedFromUi) {
+            val apiKey = dobbyConfigsRepository.getOutlineKey()
+            if (apiKey.isEmpty()) {
+                logger.log("Previously used outline apiKey is empty")
+                return
+            }
+            logger.log("!!! Start connecting Outline")
+            outlineLibFacade.init(apiKey)
+            enableCloakIfNeeded(force = !isServiceStartedFromUi)
+        } else {
+            logger.log("!!! Start disconnecting Outline")
+            vpnInterface?.close()
+            ConnectionStateRepository.update(isConnected = false) // todo move somewhere
+            stopSelf()
+        }
+    }
+
+    private fun startAwg() {
+        if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
+            logger.log("!!! Starting AmneziaWG")
+            val stringConfig = dobbyConfigsRepository.getAwgConfig()
+            val state = if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
+                TunnelState.UP
+            } else {
+                TunnelState.DOWN
+            }
+            tunnelManager.updateState(stringConfig, state)
+        } else {
+            logger.log("!!! Stopping AmneziaWG")
+            tunnelManager.updateState(null, TunnelState.DOWN)
+        }
+    }
+
+    private fun enableCloakIfNeeded(force: Boolean) {
+        val shouldEnableCloak = dobbyConfigsRepository.getIsCloakEnabled() || force
+        val cloakConfig = dobbyConfigsRepository.getCloakConfig().ifEmpty { return }
+        if (shouldEnableCloak && cloakConfig.isNotEmpty()) {
             CoroutineScope(Dispatchers.IO).launch {
-                logger.log("!!!Cloak start connecting...")
+                logger.log("!!!Cloak: connect start")
                 val result = cloakConnectInteractor.connect(config = cloakConfig)
                 logger.log("!!!Cloak connection result is $result")
             }
         } else {
-            logger.log("!!! You chose not to use Cloak")
+            logger.log("!!! Cloak is disabled. Config isEmpty == ${cloakConfig.isEmpty()}")
         }
     }
 

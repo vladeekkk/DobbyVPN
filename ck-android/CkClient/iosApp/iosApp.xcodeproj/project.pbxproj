@@ -92,7 +92,7 @@
 		A120131F2D7DB2A900D43A3A /* MyLibrary.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = MyLibrary.xcframework; sourceTree = "<group>"; };
 		A120139F2D80DE3100D43A3A /* tunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = tunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A15F0FCE2D874CDC007FA45D /* CommonDI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonDI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A17856032D8232FC003F858F /* TestFrameworkDi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = TestFrameworkDi.framework; path = "/Users/vladek/Developer/DobbyVPN/ck-android/CkClient/iosApp/build/Debug-iphoneos/TestFrameworkDi.framework"; sourceTree = "<absolute>"; };
+		A1FA34F22DADB02D007CC619 /* TestFrameworkDi.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = TestFrameworkDi.framework; path = "/Users/vladek/Developer/FORK/DobbyVPN/ck-android/CkClient/iosApp/build/Debug-iphoneos/TestFrameworkDi.framework"; sourceTree = "<absolute>"; };
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -322,7 +322,7 @@
 			packageProductDependencies = (
 			);
 			productName = TestFrameworkDi;
-			productReference = A17856032D8232FC003F858F /* TestFrameworkDi.framework */;
+			productReference = A1FA34F22DADB02D007CC619 /* TestFrameworkDi.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -673,7 +673,8 @@
 				DEVELOPMENT_TEAM = F6CHJX72K5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/TestFrameworkDi",
+					"$(inherited)",
+					"$(SRCROOT)/../app/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
 					"$(PROJECT_DIR)/CommonDI",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -711,7 +712,8 @@
 				DEVELOPMENT_TEAM = F6CHJX72K5;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/TestFrameworkDi",
+					"$(inherited)",
+					"$(SRCROOT)/../app/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
 					"$(PROJECT_DIR)/CommonDI",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu17;

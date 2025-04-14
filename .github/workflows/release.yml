@@ -9,203 +9,203 @@ on:
       - "v*"
 
 jobs:
-  windows_build:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        go-version: ["1.23.2"]
+#  windows_build:
+#    runs-on: windows-latest
+#    strategy:
+#      matrix:
+#        go-version: ["1.23.2"]
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Setup Go
+#        uses: actions/setup-go@v5
+#        with:
+#          go-version: "1.22.x"
+#
+#      - name: Install dependencies
+#        run: |
+#          cd src
+#          cd ..
+#
+#      - name: Install submodules
+#        run: |
+#          git submodule add https://github.com/cbeuw/Cloak
+#          git submodule init
+#          git submodule update
+#          # mv -Force log-files/piper.go Cloak/internal/client/piper.go
+#          # mv -Force log-files/connector.go Cloak/internal/client/connector.go
+#          # mv -Force log-files/TLS.go Cloak/internal/client/TLS.go
+#          # mv -Force log-files/copy.go Cloak/internal/common/copy.go
+#
+#      - name: Clone ck-client
+#        run: |
+#          mkdir Cloak/internal/out
+#          cp log-files/logging.go Cloak/internal/out/logging.go
+#          cp -r ck-client/Windows Cloak
+#          cp -r ck-client/WindowsTunnelService Cloak/Windows/WindowsTunnelService
+#          cp ck-client/app.go Cloak/Windows
+#          cp ck-client/ck-client.go Cloak/Windows
+#          cp ck-client/Icon.png Cloak/Windows
+#          cp ck-client/log_android.go Cloak/Windows
+#          cp ck-client/outline_device.go Cloak/Windows
+#          cp ck-client/outline_packet_proxy.go Cloak/Windows
+#          cp ck-client/protector.go Cloak/Windows
+#
+#      - name: Install Go dependencies
+#        run: |
+#          cd Cloak/Windows
+#          go get github.com/amnezia-vpn/amneziawg-windows/tunnel@v0.1.4-0.20240526104134-db18f2297e5e
+#          go mod tidy
+#          go install fyne.io/fyne/v2/cmd/fyne@latest
+#          cd ../..
+#
+#      - name: Build Windows tunnel service
+#        run: |
+#          cd Cloak/Windows/WindowsTunnelService
+#          go build -o tunnel-service.exe .
+#          cd ../../../
+#
+#      - name: Build windows client
+#        run: |
+#          cd Cloak/Windows
+#          fyne package -os windows
+#          cd ../..
+#
+#      - name: Make Windows zip
+#        run: |
+#          mkdir dobbyvpn-windows-amd64
+#          mkdir dobbyvpn-windows-amd64/libs
+#          cp Cloak/Windows/WindowsTunnelService/tunnel-service.exe dobbyvpn-windows-amd64/libs/tunnel-service.exe
+#          cp Cloak/Windows/Windows.exe dobbyvpn-windows-amd64/dobbyvpn-windows.exe
+#          Compress-Archive dobbyvpn-windows-amd64 dobbyvpn-windows-amd64.zip
+#
+#      - name: Upload Windows client
+#        uses: actions/upload-artifact@master
+#        with:
+#          name: dobbyvpn-windows-amd64.zip
+#          path: dobbyvpn-windows-amd64.zip
 
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.22.x"
-
-      - name: Install dependencies
-        run: |
-          cd src
-          cd ..
-
-      - name: Install submodules
-        run: |
-          git submodule add https://github.com/cbeuw/Cloak
-          git submodule init
-          git submodule update
-          # mv -Force log-files/piper.go Cloak/internal/client/piper.go
-          # mv -Force log-files/connector.go Cloak/internal/client/connector.go
-          # mv -Force log-files/TLS.go Cloak/internal/client/TLS.go
-          # mv -Force log-files/copy.go Cloak/internal/common/copy.go
-
-      - name: Clone ck-client
-        run: |
-          mkdir Cloak/internal/out
-          cp log-files/logging.go Cloak/internal/out/logging.go
-          cp -r ck-client/Windows Cloak
-          cp -r ck-client/WindowsTunnelService Cloak/Windows/WindowsTunnelService
-          cp ck-client/app.go Cloak/Windows
-          cp ck-client/ck-client.go Cloak/Windows
-          cp ck-client/Icon.png Cloak/Windows
-          cp ck-client/log_android.go Cloak/Windows
-          cp ck-client/outline_device.go Cloak/Windows
-          cp ck-client/outline_packet_proxy.go Cloak/Windows
-          cp ck-client/protector.go Cloak/Windows
-
-      - name: Install Go dependencies
-        run: |
-          cd Cloak/Windows
-          go get github.com/amnezia-vpn/amneziawg-windows/tunnel@v0.1.4-0.20240526104134-db18f2297e5e
-          go mod tidy
-          go install fyne.io/fyne/v2/cmd/fyne@latest
-          cd ../..
-
-      - name: Build Windows tunnel service
-        run: |
-          cd Cloak/Windows/WindowsTunnelService
-          go build -o tunnel-service.exe .
-          cd ../../../
-
-      - name: Build windows client
-        run: |
-          cd Cloak/Windows
-          fyne package -os windows
-          cd ../..
-
-      - name: Make Windows zip
-        run: |
-          mkdir dobbyvpn-windows-amd64
-          mkdir dobbyvpn-windows-amd64/libs
-          cp Cloak/Windows/WindowsTunnelService/tunnel-service.exe dobbyvpn-windows-amd64/libs/tunnel-service.exe
-          cp Cloak/Windows/Windows.exe dobbyvpn-windows-amd64/dobbyvpn-windows.exe
-          Compress-Archive dobbyvpn-windows-amd64 dobbyvpn-windows-amd64.zip
-
-      - name: Upload Windows client
-        uses: actions/upload-artifact@master
-        with:
-          name: dobbyvpn-windows-amd64.zip
-          path: dobbyvpn-windows-amd64.zip
-
-  linux_build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: ["1.23.2"]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.22.x"
-      - name: Install dependencies
-        run: |
-          cd src
-          go get ./...
-          cd ..
-          sudo apt-get install golang gcc libgl1-mesa-dev xorg-dev
-          sudo apt-get install gcc-multilib
-          sudo apt-get install gcc-mingw-w64
-      - name: Clone Cloak and copying ck-client
-        run: |
-          git submodule add https://github.com/cbeuw/Cloak
-          git submodule init
-          git submodule update
-          # mv -f log-files/piper.go Cloak/internal/client/piper.go
-          # mv -f log-files/connector.go Cloak/internal/client/connector.go
-          # mv -f log-files/TLS.go Cloak/internal/client/TLS.go
-          # mv -f log-files/copy.go Cloak/internal/common/copy.go
-          mkdir Cloak/internal/out
-          cp log-files/logging.go Cloak/internal/out/logging.go
-          
-          cp -r ck-client/Linux Cloak
-          cp ck-client/Linux/awgconf/*.go Cloak/Linux/
-          cp ck-client/Linux/awgconf/*.go Cloak/Linux/tunnel/
-          
-          cp ck-client/app.go Cloak/Linux
-          cp ck-client/ck-client.go Cloak/Linux
-          cp ck-client/Icon.png Cloak/Linux
-          cp ck-client/log_android.go Cloak/Linux
-          cp ck-client/outline_device.go Cloak/Linux
-          cp ck-client/outline_packet_proxy.go Cloak/Linux
-          cp ck-client/protector.go Cloak/Linux
-          
-          cd Cloak/Linux
-          go mod tidy
-          cd ../..
-      - name: Build linux ck-client
-        run: |
-          cd Cloak/Linux
-
-          cd tunnel/
-          go build -o tunnel-service .
-          cd ../
-
-          go build -o dobbyvpn-linux-amd64 .
-          cd ../../
-      - name: Make linux zip
-        run: |
-          mkdir dobbyvpn-linux-amd64
-          mkdir dobbyvpn-linux-amd64/libs/
-          mv Cloak/Linux/dobbyvpn-linux-amd64 dobbyvpn-linux-amd64/dobbyvpn-linux-amd64
-          mv Cloak/Linux/tunnel/tunnel-service dobbyvpn-linux-amd64/libs/tunnel-service
-          zip -r dobbyvpn-linux-amd64.zip dobbyvpn-linux-amd64
-      - name: Upload Linux client
-        uses: actions/upload-artifact@master
-        with:
-          name: dobbyvpn-linux-amd64.zip
-          path: dobbyvpn-linux-amd64.zip
-
-  macos_build_arm64:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        go-version: ["1.23.2"]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.22.x"
-      - name: Clone Cloak and copying ck-client
-        run: |
-          git submodule add https://github.com/cbeuw/Cloak
-          git submodule init
-          git submodule update
-          # mv -f log-files/piper.go Cloak/internal/client/piper.go
-          # mv -f log-files/connector.go Cloak/internal/client/connector.go
-          # mv -f log-files/TLS.go Cloak/internal/client/TLS.go
-          # mv -f log-files/copy.go Cloak/internal/common/copy.go
-          mkdir Cloak/internal/out
-          cp log-files/logging.go Cloak/internal/out/logging.go
-          cp -r ck-client/MacOs Cloak
-          cp ck-client/app.go Cloak/MacOs
-          cp ck-client/ck-client.go Cloak/MacOs
-          cp ck-client/Icon.png Cloak/MacOs
-          cp ck-client/log_android.go Cloak/MacOs
-          cp ck-client/outline_device.go Cloak/MacOs
-          cp ck-client/outline_packet_proxy.go Cloak/MacOs
-          cp ck-client/protector.go Cloak/MacOs
-          cd Cloak
-          git clone --branch v1.6.0 https://github.com/database64128/swgp-go.git
-          echo "replace github.com/database64128/swgp-go v1.6.0 => ./swgp-go" >> go.mod
-          cd ..
-          cd Cloak/MacOs
-          go mod tidy
-          cd ../..
-
-      - name: Build macos ck-client
-        run: |
-          cd Cloak/MacOs
-          go build -o dobbyvpn-darwin-arm64 .
-      - name: Upload MacOs client
-        uses: actions/upload-artifact@master
-        with:
-          name: dobbyvpn-darwin-arm64
-          path: Cloak/MacOs/dobbyvpn-darwin-arm64
+#  linux_build:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        go-version: ["1.23.2"]
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Setup Go
+#        uses: actions/setup-go@v5
+#        with:
+#          go-version: "1.22.x"
+#      - name: Install dependencies
+#        run: |
+#          cd src
+#          go get ./...
+#          cd ..
+#          sudo apt-get install golang gcc libgl1-mesa-dev xorg-dev
+#          sudo apt-get install gcc-multilib
+#          sudo apt-get install gcc-mingw-w64
+#      - name: Clone Cloak and copying ck-client
+#        run: |
+#          git submodule add https://github.com/cbeuw/Cloak
+#          git submodule init
+#          git submodule update
+#          # mv -f log-files/piper.go Cloak/internal/client/piper.go
+#          # mv -f log-files/connector.go Cloak/internal/client/connector.go
+#          # mv -f log-files/TLS.go Cloak/internal/client/TLS.go
+#          # mv -f log-files/copy.go Cloak/internal/common/copy.go
+#          mkdir Cloak/internal/out
+#          cp log-files/logging.go Cloak/internal/out/logging.go
+#
+#          cp -r ck-client/Linux Cloak
+#          cp ck-client/Linux/awgconf/*.go Cloak/Linux/
+#          cp ck-client/Linux/awgconf/*.go Cloak/Linux/tunnel/
+#
+#          cp ck-client/app.go Cloak/Linux
+#          cp ck-client/ck-client.go Cloak/Linux
+#          cp ck-client/Icon.png Cloak/Linux
+#          cp ck-client/log_android.go Cloak/Linux
+#          cp ck-client/outline_device.go Cloak/Linux
+#          cp ck-client/outline_packet_proxy.go Cloak/Linux
+#          cp ck-client/protector.go Cloak/Linux
+#
+#          cd Cloak/Linux
+#          go mod tidy
+#          cd ../..
+#      - name: Build linux ck-client
+#        run: |
+#          cd Cloak/Linux
+#
+#          cd tunnel/
+#          go build -o tunnel-service .
+#          cd ../
+#
+#          go build -o dobbyvpn-linux-amd64 .
+#          cd ../../
+#      - name: Make linux zip
+#        run: |
+#          mkdir dobbyvpn-linux-amd64
+#          mkdir dobbyvpn-linux-amd64/libs/
+#          mv Cloak/Linux/dobbyvpn-linux-amd64 dobbyvpn-linux-amd64/dobbyvpn-linux-amd64
+#          mv Cloak/Linux/tunnel/tunnel-service dobbyvpn-linux-amd64/libs/tunnel-service
+#          zip -r dobbyvpn-linux-amd64.zip dobbyvpn-linux-amd64
+#      - name: Upload Linux client
+#        uses: actions/upload-artifact@master
+#        with:
+#          name: dobbyvpn-linux-amd64.zip
+#          path: dobbyvpn-linux-amd64.zip
+#
+#  macos_build_arm64:
+#    runs-on: macos-latest
+#    strategy:
+#      matrix:
+#        go-version: ["1.23.2"]
+#
+#    steps:
+#      - uses: actions/checkout@v4
+#
+#      - name: Setup Go
+#        uses: actions/setup-go@v5
+#        with:
+#          go-version: "1.22.x"
+#      - name: Clone Cloak and copying ck-client
+#        run: |
+#          git submodule add https://github.com/cbeuw/Cloak
+#          git submodule init
+#          git submodule update
+#          # mv -f log-files/piper.go Cloak/internal/client/piper.go
+#          # mv -f log-files/connector.go Cloak/internal/client/connector.go
+#          # mv -f log-files/TLS.go Cloak/internal/client/TLS.go
+#          # mv -f log-files/copy.go Cloak/internal/common/copy.go
+#          mkdir Cloak/internal/out
+#          cp log-files/logging.go Cloak/internal/out/logging.go
+#          cp -r ck-client/MacOs Cloak
+#          cp ck-client/app.go Cloak/MacOs
+#          cp ck-client/ck-client.go Cloak/MacOs
+#          cp ck-client/Icon.png Cloak/MacOs
+#          cp ck-client/log_android.go Cloak/MacOs
+#          cp ck-client/outline_device.go Cloak/MacOs
+#          cp ck-client/outline_packet_proxy.go Cloak/MacOs
+#          cp ck-client/protector.go Cloak/MacOs
+#          cd Cloak
+#          git clone --branch v1.6.0 https://github.com/database64128/swgp-go.git
+#          echo "replace github.com/database64128/swgp-go v1.6.0 => ./swgp-go" >> go.mod
+#          cd ..
+#          cd Cloak/MacOs
+#          go mod tidy
+#          cd ../..
+#
+#      - name: Build macos ck-client
+#        run: |
+#          cd Cloak/MacOs
+#          go build -o dobbyvpn-darwin-arm64 .
+#      - name: Upload MacOs client
+#        uses: actions/upload-artifact@master
+#        with:
+#          name: dobbyvpn-darwin-arm64
+#          path: Cloak/MacOs/dobbyvpn-darwin-arm64
 
   android_build:
     runs-on: ubuntu-latest
@@ -253,6 +253,36 @@ jobs:
         with:
           name: dobbyvpn-android.apk
           path: dobbyvpn-android.apk
+  ios_build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout node
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@2
+        with:
+          java-version: '17'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build Kotlin Multiplatform
+        run: |
+          cd ck-android/CkClient
+          chmod +x gradlew
+          ./gradlew assemble
+          ./gradlew iosArm64MainKLibrary
+
+      - name: Build iOS App
+        run: |
+          xcodebuild -workspace iosApp/iosApp.xcodeproj/project.xcworkspace -scheme iosApp -configuration Release -sdk iphoneos -archivePath ./build/iosApp.xcarchive archive            
 
   release:
     runs-on: ubuntu-latest

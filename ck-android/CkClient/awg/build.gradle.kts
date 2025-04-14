@@ -11,7 +11,7 @@ val cmakeAndroidPackageName: String = providers.environmentVariable("ANDROID_PAC
 
 android {
     namespace = pkg
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 24

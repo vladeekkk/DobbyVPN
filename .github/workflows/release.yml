@@ -274,6 +274,9 @@ jobs:
           java-version: "17"
           distribution: "temurin"
 
+      - name: Select Xcode 16.1
+        run: sudo xcode-select -s /Applications/Xcode_16.1.app
+
       - name: Set up Git Submodules
         run: |
           git submodule update --init --recursive
@@ -283,7 +286,7 @@ jobs:
           cd src
           go get ./...
           cd ..
-          
+
 #          sudo apt-get install golang gcc libgl1-mesa-dev xorg-dev
 #          sudo apt-get install gcc-multilib
 #          sudo apt-get install gcc-mingw-w64

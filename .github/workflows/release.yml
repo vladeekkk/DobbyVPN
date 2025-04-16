@@ -296,6 +296,32 @@ jobs:
 #          restore-keys: |
 #            ${{ runner.os }}-gradle-
 
+      - name: Decode and Install Certificates & Profiles
+        env:
+          DIST_CERT_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          PROFILE_MAIN_BASE64: ${{ secrets.IOS_PROFILE_MAIN }}
+          PROFILE_TUNNEL_BASE64: ${{ secrets.IOS_PROFILE_TUNNEL }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERT_PATH=$RUNNER_TEMP/dist.p12
+          PROFILE_MAIN=$RUNNER_TEMP/main.mobileprovision
+          PROFILE_TUNNEL=$RUNNER_TEMP/tunnel.mobileprovision
+
+          echo "$DIST_CERT_BASE64" | base64 --decode > $CERT_PATH
+          echo "$PROFILE_MAIN_BASE64" | base64 --decode > $PROFILE_MAIN
+          echo "$PROFILE_TUNNEL_BASE64" | base64 --decode > $PROFILE_TUNNEL
+
+          # Setup keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security import $CERT_PATH -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PROFILE_MAIN ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp $PROFILE_TUNNEL ~/Library/MobileDevice/Provisioning\ Profiles/
+
       - name: Build Kotlin Multiplatform
         run: |
           cd ck-android/CkClient
@@ -303,11 +329,51 @@ jobs:
           ./gradlew assembleDebug
           ./gradlew iosArm64MainKLibrary
 
-      - name: Build iOS App
+      - name: Build and Archive
         run: |
           cd ck-android/CkClient/iosApp
           echo "Current directory: $(pwd)"
-          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Release -sdk iphoneos -archivePath ./build/iosApp.xcarchive archive            
+          xcodebuild -project iosApp.xcodeproj \
+                     -scheme iosApp \
+                     -configuration Release \
+                     -sdk iphoneos \
+                     -archivePath $PWD/build/iosApp.xcarchive \
+                     archive
+
+      - name: Export IPA
+        run: |
+          cat > exportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.dobby.vpn</key>
+              <string>DobbyVPNAppStore</string>
+              <key>com.dobby.vpn.tunnel</key>
+              <string>DobbyVPNTunnelAppStore</string>
+            </dict>
+            <key>teamID</key>
+            <string>F6CHJX72K5</string>
+          </dict>
+          </plist>
+          EOF
+          
+          xcodebuild -exportArchive \
+                     -archivePath $PWD/build/iosApp.xcarchive \
+                     -exportPath $PWD/build/ipa \
+                     -exportOptionsPlist exportOptions.plist
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v3
+        with:
+          name: iosApp.ipa
+          path: build/ipa/*.ipa
 
 #  release:
 #    runs-on: ubuntu-latest

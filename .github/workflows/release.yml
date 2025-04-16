@@ -320,10 +320,20 @@ jobs:
           security default-keychain -s build.keychain
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           security import $CERT_PATH -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
-
+      
+          # Fix key access for codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+      
+          # Make sure codesign tools use this keychain
+          security list-keychains -d user -s build.keychain
+      
+          # Install provisioning profiles
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PROFILE_MAIN ~/Library/MobileDevice/Provisioning\ Profiles/
           cp $PROFILE_TUNNEL ~/Library/MobileDevice/Provisioning\ Profiles/
+      
+          # Optional debug info
+          security find-identity -v -p codesigning build.keychain
 
       - name: Build Kotlin Multiplatform
         run: |
@@ -345,14 +355,6 @@ jobs:
       - name: Build and Archive
         run: |
           cd ck-android/CkClient/iosApp
-          COMMON_DI_PATH="iosApp/CommonDI/CommonDI.framework"
-          if [ -d "$COMMON_DI_PATH" ]; then
-            echo "✅ Found CommonDI.framework, signing..."
-            codesign --force --sign - --timestamp=none "$COMMON_DI_PATH"
-          else
-            echo "⚠️ CommonDI.framework not found at $COMMON_DI_PATH — skipping"
-          fi
-          echo "xcodebuild GOOOOOOO"
           xcodebuild -project iosApp.xcodeproj \
                      -scheme iosApp \
                      -configuration Release \

@@ -330,7 +330,7 @@ jobs:
           cd ck-android/CkClient
           chmod +x gradlew
           echo "Current directory: $(xcodebuild -version)"
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
           ./gradlew iosArm64MainKLibrary
 
       - name: Build and Archive

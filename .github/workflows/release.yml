@@ -345,7 +345,14 @@ jobs:
       - name: Build and Archive
         run: |
           cd ck-android/CkClient/iosApp
-          echo "Current directory: $(pwd)"
+          COMMON_DI_PATH="iosApp/CommonDI/CommonDI.framework"
+          if [ -d "$COMMON_DI_PATH" ]; then
+            echo "✅ Found CommonDI.framework, signing..."
+            codesign --force --sign - --timestamp=none "$COMMON_DI_PATH"
+          else
+            echo "⚠️ CommonDI.framework not found at $COMMON_DI_PATH — skipping"
+          fi
+          echo "xcodebuild GOOOOOOO"
           xcodebuild -project iosApp.xcodeproj \
                      -scheme iosApp \
                      -configuration Release \

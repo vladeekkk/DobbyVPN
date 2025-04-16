@@ -370,7 +370,7 @@ jobs:
                      -exportOptionsPlist exportOptions.plist
 
       - name: Upload IPA
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@master
         with:
           name: iosApp.ipa
           path: build/ipa/*.ipa

@@ -329,7 +329,11 @@ jobs:
         run: |
           cd ck-android/CkClient
           chmod +x gradlew
-          ./gradlew :app:linkReleaseFrameworkIosArm64
+          ./gradlew linkReleaseFrameworkIosArm64
+          cd app
+          echo $(ls)
+          cd build
+          echo $(ls)
 #          ./gradlew iosArm64MainKLibrary
 
       - name: Upload iOS Framework as artifact

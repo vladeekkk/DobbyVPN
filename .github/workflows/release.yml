@@ -369,7 +369,7 @@ jobs:
                      -exportPath $PWD/build/ipa \
                      -exportOptionsPlist exportOptions.plist
 
-      - name: Upload IPA
+      - name: Upload IPA # kek
         uses: actions/upload-artifact@master
         with:
           name: iosApp.ipa

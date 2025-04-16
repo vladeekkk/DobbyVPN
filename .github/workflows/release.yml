@@ -329,9 +329,14 @@ jobs:
         run: |
           cd ck-android/CkClient
           chmod +x gradlew
-          echo "Current directory: $(xcodebuild -version)"
-          ./gradlew assembleRelease
-          ./gradlew iosArm64MainKLibrary
+          ./gradlew :app:linkReleaseFrameworkIosArm64
+#          ./gradlew iosArm64MainKLibrary
+
+      - name: Upload iOS Framework as artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: app-framework
+          path: app/build/bin/iosArm64/releaseFramework/app.framework
 
       - name: Build and Archive
         run: |

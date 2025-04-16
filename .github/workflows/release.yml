@@ -326,6 +326,7 @@ jobs:
         run: |
           cd ck-android/CkClient
           chmod +x gradlew
+          echo "Current directory: $(xcodebuild -version)"
           ./gradlew assembleDebug
           ./gradlew iosArm64MainKLibrary
 

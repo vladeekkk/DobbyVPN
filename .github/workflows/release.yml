@@ -340,6 +340,7 @@ jobs:
           xcodebuild -project iosApp.xcodeproj \
                      -scheme iosApp \
                      -configuration Release \
+                     -allowProvisioningUpdates \
                      -sdk iphoneos \
                      -archivePath $PWD/build/iosApp.xcarchive \
                      archive

@@ -307,7 +307,7 @@ jobs:
         run: |
           cd ck-android/CkClient/iosApp
           echo "Current directory: $(pwd)"
-          xcodebuild -workspace iosApp.xcodeproj/project.xcworkspace -scheme iosApp -configuration Release -sdk iphoneos -archivePath ./build/iosApp.xcarchive archive            
+          xcodebuild -project /iosApp.xcodeproj -scheme iosApp -configuration Release -sdk iphoneos -archivePath ./build/iosApp.xcarchive archive            
 
 #  release:
 #    runs-on: ubuntu-latest

@@ -310,29 +310,44 @@ jobs:
           CERT_PATH=$RUNNER_TEMP/dist.p12
           PROFILE_MAIN=$RUNNER_TEMP/main.mobileprovision
           PROFILE_TUNNEL=$RUNNER_TEMP/tunnel.mobileprovision
-
+          
+          echo "📥 Декодируем сертификаты и профили в временные файлы..."
           echo "$DIST_CERT_BASE64" | base64 --decode > $CERT_PATH
+          echo "✅ Сертификат сохранён в $CERT_PATH"
           echo "$PROFILE_MAIN_BASE64" | base64 --decode > $PROFILE_MAIN
+          echo "✅ Профиль main сохранён в $PROFILE_MAIN"
           echo "$PROFILE_TUNNEL_BASE64" | base64 --decode > $PROFILE_TUNNEL
-
-          # Setup keychain
+          echo "✅ Профиль tunnel сохранён в $PROFILE_TUNNEL"
+          
+          echo "🔐 Создание и настройка keychain..."
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          echo "✅ Keychain создан"
+          
           security default-keychain -s build.keychain
+          echo "✅ Установлен как default"
+          
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          echo "✅ Keychain разблокирован"
+          
           security import $CERT_PATH -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
-      
-          # Fix key access for codesign
+          echo "✅ Сертификат импортирован в keychain"
+          
+          echo "🔧 Настройка доступа для codesign..."
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-      
-          # Make sure codesign tools use this keychain
+          echo "✅ Key partition list настроен"
+          
+          echo "🔍 Keychains в списке пользователя:"
           security list-keychains -d user -s build.keychain
-      
-          # Install provisioning profiles
+          
+          echo "📁 Копируем provisioning profiles..."
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PROFILE_MAIN ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "✅ PROFILE_MAIN установлен"
+          
           cp $PROFILE_TUNNEL ~/Library/MobileDevice/Provisioning\ Profiles/
-      
-          # Optional debug info
+          echo "✅ PROFILE_TUNNEL установлен"
+          
+          echo "🔎 Поиск кодсайнинг-идентификаторов в keychain:"
           security find-identity -v -p codesigning build.keychain
 
       - name: Build Kotlin Multiplatform

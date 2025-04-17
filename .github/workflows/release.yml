@@ -335,7 +335,7 @@ jobs:
           file "$CERT_PATH"
           echo "🔑 Пробуем импортировать в keychain..."
   
-         security import $CERT_PATH -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security import $CERT_PATH -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
           echo "✅ Сертификат импортирован в keychain"
           
           echo "🔧 Настройка доступа для codesign..."

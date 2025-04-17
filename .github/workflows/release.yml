@@ -361,7 +361,7 @@ jobs:
           echo -e "#!/bin/bash\necho Hello" > Dummy.app/Contents/MacOS/Dummy
           chmod +x Dummy.app/Contents/MacOS/Dummy
 
-          echo "✅ Проверка dry-run подписи dummy приложения"
+          echo "✅ Проверка dry-run подписи dummy приложения" # kek
           codesign -s "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" --dryrun --verbose Dummy.app || echo "❌ Подпись не удалась"
 
 

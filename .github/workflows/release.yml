@@ -330,6 +330,7 @@ jobs:
           echo "✅ Keychain разблокирован"
           
           echo "ℹ️ Пробуем импорт с P12_PASSWORD длиной: ${#P12_PASSWORD}"
+          echo "🔍 Base64 длина: ${#DIST_CERT_BASE64}"
           
           echo "📁 Содержимое p12 (тип):"
           file "$CERT_PATH"

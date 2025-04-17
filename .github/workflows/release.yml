@@ -329,6 +329,8 @@ jobs:
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           echo "✅ Keychain разблокирован"
           
+          echo "ℹ️ Пробуем импорт с P12_PASSWORD длиной: ${#P12_PASSWORD}"
+          
           security import $CERT_PATH -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
           echo "✅ Сертификат импортирован в keychain"
           

@@ -364,6 +364,14 @@ jobs:
           /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" tunnel.plist || true
           /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" tunnel.plist || true
 
+      - name: 🔐 Проверка доступа к сертификату в keychain
+        run: |
+          echo "🔍 Проверка наличия сертификатов в keychain:"
+          security find-identity -v -p codesigning build.keychain
+
+          echo "🔧 Проверка, можно ли использовать сертификат для подписания:"
+          codesign -s "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" --dryrun /Applications/Calculator.app || echo "❌ Подпись не удалась"
+
       - name: Build Kotlin Multiplatform
         run: |
           cd ck-android/CkClient

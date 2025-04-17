@@ -364,6 +364,9 @@ jobs:
           echo "✅ Проверка dry-run подписи dummy приложения"
           codesign -s "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" --dryrun --verbose Dummy.app || echo "❌ Подпись не удалась"
 
+      - name: 🔐 Проверка .p12 на CI
+        run: |
+          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:$P12_PASSWORD || echo "❌ Ошибка расшифровки p12"
 
       - name: 🔍 Inspect Provisioning Profiles
         run: |

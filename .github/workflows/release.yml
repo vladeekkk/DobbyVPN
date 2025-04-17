@@ -314,7 +314,7 @@ jobs:
           PROFILE_TUNNEL="$RUNNER_TEMP/tunnel.mobileprovision"
           KEYCHAIN_NAME="build.keychain"
           
-          echo "🔍 Проверка переменных:"
+          echo "🔍 Проверка переменнытх:"
           echo "📦 DIST_CERT_BASE64 длина: ${#DIST_CERT_BASE64}"
           echo "🔑 P12_PASSWORD длина: ${#P12_PASSWORD}"
           echo "🔐 KEYCHAIN_PASSWORD длина: ${#KEYCHAIN_PASSWORD}"

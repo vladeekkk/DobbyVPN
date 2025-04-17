@@ -349,6 +349,21 @@ jobs:
           
           echo "🔎 Поиск кодсайнинг-идентификаторов в keychain:"
           security find-identity -v -p codesigning build.keychain
+          
+          echo "🔍 Сертификаты в keychain:"
+          security find-identity -v -p codesigning "$KEYCHAIN_NAME"
+
+          echo "🔐 Проверка доступа к приватному ключу:"
+          security find-key -c "Apple Distribution: ZENDEV LTD ($EXPECTED_TEAM_ID)" "$KEYCHAIN_NAME" || echo "❌ Приватный ключ не найден"
+
+          echo "⚙️ Создание dummy .app для теста подписи"
+          mkdir -p Dummy.app/Contents/MacOS
+          echo -e "#!/bin/bash\necho Hello" > Dummy.app/Contents/MacOS/Dummy
+          chmod +x Dummy.app/Contents/MacOS/Dummy
+
+          echo "✅ Проверка dry-run подписи dummy приложения"
+          codesign -s "Apple Distribution: ZENDEV LTD ($EXPECTED_TEAM_ID)" --dryrun --verbose Dummy.app || echo "❌ Подпись не удалась"
+
 
       - name: 🔍 Inspect Provisioning Profiles
         run: |

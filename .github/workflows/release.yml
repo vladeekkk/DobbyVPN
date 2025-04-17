@@ -330,7 +330,7 @@ jobs:
           file "$CERT_PATH"
           
           echo "🔍 Проверка p12 через openssl:"
-          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:"$P12_PASSWORD" || echo "❌ Ошибка в openssl: возможно неверный пароль"
+          openssl pkcs12 -info -in "$CERT_PATH" -legacy -nodes -passin pass:"$P12_PASSWORD" || echo "❌ Ошибка в openssl: возможно неверный пароль"
           
           echo "🔐 Создание и настройка keychain..."
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"

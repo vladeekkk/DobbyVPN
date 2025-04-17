@@ -329,9 +329,12 @@ jobs:
           ls -lh "$CERT_PATH"
           file "$CERT_PATH"
           
-          echo "🔍 Проверка p12 через openssl:"
-          openssl pkcs12 -info -in "$CERT_PATH" -legacy -nodes -passin pass:"$P12_PASSWORD" || echo "❌ Ошибка в openssl: возможно неверный пароль"
-          
+          echo "🔍 Попытка расшифровки через openssl..."
+          openssl pkcs12 -info -in "$CERT_PATH" -nodes -passin pass:"$P12_PASSWORD" || echo "❌ openssl не смог распаковать p12 (возможно, нужен openssl 3 или legacy флаг)"
+  
+          echo "🔑 Пробуем импортировать через security..."
+          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "$P12_PASSWORD" -T /usr/bin/codesign || echo "❌ Импорт не удался (неверный пароль?)"
+                
           echo "🔐 Создание и настройка keychain..."
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
           security default-keychain -s "$KEYCHAIN_NAME"

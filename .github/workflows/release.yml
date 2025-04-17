@@ -299,92 +299,75 @@ jobs:
 #          restore-keys: |
 #            ${{ runner.os }}-gradle-
 
-      - name: Decode and Install Certificates & Profiles
-        env:
-          DIST_CERT_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12 }}
-          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-          PROFILE_MAIN_BASE64: ${{ secrets.IOS_PROFILE_MAIN }}
-          PROFILE_TUNNEL_BASE64: ${{ secrets.IOS_PROFILE_TUNNEL }}
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      - name: 🔐 Decode, Install Certificates & Profiles with Debug Info
         run: |
+          set -euo pipefail
+          
           CERT_PATH=$RUNNER_TEMP/dist.p12
           PROFILE_MAIN=$RUNNER_TEMP/main.mobileprovision
           PROFILE_TUNNEL=$RUNNER_TEMP/tunnel.mobileprovision
-      
+          KEYCHAIN_NAME=build.keychain
+          
           echo "📥 Декодируем сертификат..."
-          # Декодирование сертификата
           echo "${{ secrets.IOS_DISTRIBUTION_P12 }}" | base64 --decode > "$CERT_PATH"
           echo "✅ Сертификат сохранён в $CERT_PATH"
-      
-          # Декодирование профилей
+          
           echo "${{ secrets.IOS_PROFILE_MAIN }}" | base64 --decode > "$PROFILE_MAIN"
           echo "✅ Профиль main сохранён в $PROFILE_MAIN"
-      
+          
           echo "${{ secrets.IOS_PROFILE_TUNNEL }}" | base64 --decode > "$PROFILE_TUNNEL"
           echo "✅ Профиль tunnel сохранён в $PROFILE_TUNNEL"
-      
-          # Проверка типа файла и его размера
-          echo "🔍 Проверяем файл сертификата:"
-          du -h "$CERT_PATH"  # размер файла
-          file "$CERT_PATH"   # тип файла
-          echo "🔍 Проверка base64 декодирования с openssl:"
-          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:${{ secrets.P12_PASSWORD }} || echo "❌ Ошибка при распаковке p12"
-      
-          # Пробуем импортировать в keychain
-          echo "🔑 Пробуем импортировать сертификат в keychain..."
-          security import "$CERT_PATH" -k build.keychain -P "${{ secrets.P12_PASSWORD }}" -T /usr/bin/codesign || echo "❌ Не удалось импортировать сертификат"          
           
-          echo "🔐 Создание и настройка keychain..." # kek
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          echo "✅ Keychain создан"
-          
-          security default-keychain -s build.keychain
-          echo "✅ Установлен как default"
-          
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          echo "✅ Keychain разблокирован"
-          
-          echo "ℹ️ Пробуем импорт с P12_PASSWORD длиной: ${#P12_PASSWORD}"
-          echo "🔍 Base64 длина: ${#DIST_CERT_BASE64}"
-          
-          echo "📁 Содержимое p12 (тип):"
+          echo "🔍 Проверка размера и типа файла сертификата:"
+          du -h "$CERT_PATH"
           file "$CERT_PATH"
-          echo "🔑 Пробуем импортировать в keychain..."
-  
-          security import $CERT_PATH -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
-          echo "✅ Сертификат импортирован в keychain"
           
-          echo "🔧 Настройка доступа для codesign..."
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-          echo "✅ Key partition list настроен"
+          echo "🔍 Проверка openssl декодирования p12:"
+          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:${{ secrets.P12_PASSWORD }} || echo "❌ openssl не смог распаковать p12"
           
-          echo "🔍 Keychains в списке пользователя:"
-          security list-keychains -d user -s build.keychain
+          echo "🔐 Создание и настройка keychain..."
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+          security default-keychain -s "$KEYCHAIN_NAME"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+          echo "✅ Keychain $KEYCHAIN_NAME готов"
           
-          echo "📁 Копируем provisioning profiles..."
+          echo "🔍 Base64 длина: ${#DIST_CERT_BASE64}"
+          echo "🔑 Пробуем импортировать сертификат в keychain..."
+          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "${{ secrets.P12_PASSWORD }}" -T /usr/bin/codesign || echo "❌ Импорт сертификата не удался"
+          echo "✅ Сертификат импортирован"
+          
+          echo "🔧 Настройка доступа к приватному ключу..."
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+          echo "✅ Доступ настроен"
+          
+          echo "🔍 Keychains в системе:"
+          security list-keychains
+          
+          echo "🔍 Keychains в user-секции:"
+          security list-keychains -d user
+          
+          echo "🔍 Keychains активный:"
+          security default-keychain
+          
+          echo "📁 Установка provisioning profiles..."
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PROFILE_MAIN ~/Library/MobileDevice/Provisioning\ Profiles/
-          echo "✅ PROFILE_MAIN установлен"
+          cp "$PROFILE_MAIN" ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp "$PROFILE_TUNNEL" ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "✅ Provisioning profiles установлены"
           
-          cp $PROFILE_TUNNEL ~/Library/MobileDevice/Provisioning\ Profiles/
-          echo "✅ PROFILE_TUNNEL установлен"
-          
-          echo "🔎 Поиск кодсайнинг-идентификаторов в keychain:"
-          security find-identity -v -p codesigning build.keychain
-          
-          echo "🔍 Сертификаты в keychain:"
+          echo "🔎 Проверка доступных кодсайнинг-идентификаторов:"
           security find-identity -v -p codesigning "$KEYCHAIN_NAME"
-
+          
           echo "🔐 Проверка доступа к приватному ключу:"
           security find-key -c "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" "$KEYCHAIN_NAME" || echo "❌ Приватный ключ не найден"
-
-          echo "⚙️ Создание dummy .app для теста подписи"
+          
+          echo "⚙️ Создание dummy .app для dry-run подписи..."
           mkdir -p Dummy.app/Contents/MacOS
           echo -e "#!/bin/bash\necho Hello" > Dummy.app/Contents/MacOS/Dummy
           chmod +x Dummy.app/Contents/MacOS/Dummy
-
-          echo "✅ Проверка dry-run подписи dummy приложения"
-          codesign -s "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" --dryrun --verbose Dummy.app || echo "❌ Подпись не удалась"
+          
+          echo "✅ Подпись dummy-приложения (dry-run):"
+          codesign -s "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" --dryrun --verbose Dummy.app || echo "❌ Подпись dummy-приложения не удалась"
 
       - name: 🔐 Проверка .p12 на CI
         run: |

@@ -310,14 +310,29 @@ jobs:
           CERT_PATH=$RUNNER_TEMP/dist.p12
           PROFILE_MAIN=$RUNNER_TEMP/main.mobileprovision
           PROFILE_TUNNEL=$RUNNER_TEMP/tunnel.mobileprovision
-          
-          echo "📥 Декодируем сертификаты и профили в временные файлы..."
-          echo "$DIST_CERT_BASE64" | base64 --decode > $CERT_PATH
+      
+          echo "📥 Декодируем сертификат..."
+          # Декодирование сертификата
+          echo "${{ secrets.IOS_DISTRIBUTION_P12 }}" | base64 --decode > "$CERT_PATH"
           echo "✅ Сертификат сохранён в $CERT_PATH"
-          echo "$PROFILE_MAIN_BASE64" | base64 --decode > $PROFILE_MAIN
+      
+          # Декодирование профилей
+          echo "${{ secrets.IOS_PROFILE_MAIN }}" | base64 --decode > "$PROFILE_MAIN"
           echo "✅ Профиль main сохранён в $PROFILE_MAIN"
-          echo "$PROFILE_TUNNEL_BASE64" | base64 --decode > $PROFILE_TUNNEL
+      
+          echo "${{ secrets.IOS_PROFILE_TUNNEL }}" | base64 --decode > "$PROFILE_TUNNEL"
           echo "✅ Профиль tunnel сохранён в $PROFILE_TUNNEL"
+      
+          # Проверка типа файла и его размера
+          echo "🔍 Проверяем файл сертификата:"
+          du -h "$CERT_PATH"  # размер файла
+          file "$CERT_PATH"   # тип файла
+          echo "🔍 Проверка base64 декодирования с openssl:"
+          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:${{ secrets.P12_PASSWORD }} || echo "❌ Ошибка при распаковке p12"
+      
+          # Пробуем импортировать в keychain
+          echo "🔑 Пробуем импортировать сертификат в keychain..."
+          security import "$CERT_PATH" -k build.keychain -P "${{ secrets.P12_PASSWORD }}" -T /usr/bin/codesign || echo "❌ Не удалось импортировать сертификат"          
           
           echo "🔐 Создание и настройка keychain..." # kek
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain

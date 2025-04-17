@@ -299,75 +299,74 @@ jobs:
 #          restore-keys: |
 #            ${{ runner.os }}-gradle-
 
-      - name: 🔐 Decode, Install Certificates & Profiles with Debug Info
+      - name: 🔐 Установка сертификатов и provisioning-профилей с отладкой
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          DIST_CERT_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12 }}
+          PROFILE_MAIN_BASE64: ${{ secrets.IOS_PROFILE_MAIN }}
+          PROFILE_TUNNEL_BASE64: ${{ secrets.IOS_PROFILE_TUNNEL }}
         run: |
           set -euo pipefail
           
-          CERT_PATH=$RUNNER_TEMP/dist.p12
-          PROFILE_MAIN=$RUNNER_TEMP/main.mobileprovision
-          PROFILE_TUNNEL=$RUNNER_TEMP/tunnel.mobileprovision
-          KEYCHAIN_NAME=build.keychain
+          CERT_PATH="$RUNNER_TEMP/dist.p12"
+          PROFILE_MAIN="$RUNNER_TEMP/main.mobileprovision"
+          PROFILE_TUNNEL="$RUNNER_TEMP/tunnel.mobileprovision"
+          KEYCHAIN_NAME="build.keychain"
           
-          echo "📥 Декодируем сертификат..."
-          echo "${{ secrets.IOS_DISTRIBUTION_P12 }}" | base64 --decode > "$CERT_PATH"
-          echo "✅ Сертификат сохранён в $CERT_PATH"
+          echo "🔍 Проверка переменных:"
+          echo "📦 DIST_CERT_BASE64 длина: ${#DIST_CERT_BASE64}"
+          echo "🔑 P12_PASSWORD длина: ${#P12_PASSWORD}"
+          echo "🔐 KEYCHAIN_PASSWORD длина: ${#KEYCHAIN_PASSWORD}"
           
-          echo "${{ secrets.IOS_PROFILE_MAIN }}" | base64 --decode > "$PROFILE_MAIN"
-          echo "✅ Профиль main сохранён в $PROFILE_MAIN"
+          echo "📥 Декодируем и сохраняем .p12 и provisioning profiles..."
+          echo "$DIST_CERT_BASE64" | base64 --decode > "$CERT_PATH"
+          echo "$PROFILE_MAIN_BASE64" | base64 --decode > "$PROFILE_MAIN"
+          echo "$PROFILE_TUNNEL_BASE64" | base64 --decode > "$PROFILE_TUNNEL"
+          echo "✅ Все файлы декодированы"
           
-          echo "${{ secrets.IOS_PROFILE_TUNNEL }}" | base64 --decode > "$PROFILE_TUNNEL"
-          echo "✅ Профиль tunnel сохранён в $PROFILE_TUNNEL"
-          
-          echo "🔍 Проверка размера и типа файла сертификата:"
-          du -h "$CERT_PATH"
+          echo "📁 Проверка файла сертификата:"
+          ls -lh "$CERT_PATH"
           file "$CERT_PATH"
           
-          echo "🔍 Проверка openssl декодирования p12:"
-          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:${{ secrets.P12_PASSWORD }} || echo "❌ openssl не смог распаковать p12"
+          echo "🔍 Проверка p12 через openssl:"
+          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:"$P12_PASSWORD" || echo "❌ Ошибка в openssl: возможно неверный пароль"
           
           echo "🔐 Создание и настройка keychain..."
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
           security default-keychain -s "$KEYCHAIN_NAME"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
-          echo "✅ Keychain $KEYCHAIN_NAME готов"
+          echo "✅ Keychain $KEYCHAIN_NAME создан и активен"
           
-          echo "🔍 Base64 длина: ${#DIST_CERT_BASE64}"
-          echo "🔑 Пробуем импортировать сертификат в keychain..."
-          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "${{ secrets.P12_PASSWORD }}" -T /usr/bin/codesign || echo "❌ Импорт сертификата не удался"
+          echo "🔑 Импорт сертификата в keychain..."
+          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "$P12_PASSWORD" -T /usr/bin/codesign || echo "❌ Не удалось импортировать сертификат"
           echo "✅ Сертификат импортирован"
           
           echo "🔧 Настройка доступа к приватному ключу..."
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
-          echo "✅ Доступ настроен"
+          echo "✅ Приватный ключ доступен для codesign"
           
-          echo "🔍 Keychains в системе:"
-          security list-keychains
-          
-          echo "🔍 Keychains в user-секции:"
-          security list-keychains -d user
-          
-          echo "🔍 Keychains активный:"
-          security default-keychain
-          
-          echo "📁 Установка provisioning profiles..."
+          echo "📂 Установка provisioning profiles..."
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PROFILE_MAIN" ~/Library/MobileDevice/Provisioning\ Profiles/
           cp "$PROFILE_TUNNEL" ~/Library/MobileDevice/Provisioning\ Profiles/
-          echo "✅ Provisioning profiles установлены"
+          echo "✅ Профили установлены"
           
-          echo "🔎 Проверка доступных кодсайнинг-идентификаторов:"
+          echo "🔍 Список доступных identities:"
           security find-identity -v -p codesigning "$KEYCHAIN_NAME"
           
-          echo "🔐 Проверка доступа к приватному ключу:"
+          echo "🔐 Проверка приватного ключа:"
           security find-key -c "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" "$KEYCHAIN_NAME" || echo "❌ Приватный ключ не найден"
           
-          echo "⚙️ Создание dummy .app для dry-run подписи..."
+          echo "⚙️ Создание dummy-приложения для проверки подписи..."
           mkdir -p Dummy.app/Contents/MacOS
           echo -e "#!/bin/bash\necho Hello" > Dummy.app/Contents/MacOS/Dummy
           chmod +x Dummy.app/Contents/MacOS/Dummy
           
           echo "✅ Подпись dummy-приложения (dry-run):"
-          codesign -s "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" --dryrun --verbose Dummy.app || echo "❌ Подпись dummy-приложения не удалась"
+          codesign -s "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" --dryrun --verbose Dummy.app || echo "❌ Подпись не удалась"
+          
+          echo "🏁 Завершено"
 
       - name: 🔐 Проверка .p12 на CI
         run: |

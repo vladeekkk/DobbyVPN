@@ -354,7 +354,7 @@ jobs:
           security find-identity -v -p codesigning "$KEYCHAIN_NAME"
 
           echo "🔐 Проверка доступа к приватному ключу:"
-          security find-key -c "Apple Distribution: ZENDEV LTD ($EXPECTED_TEAM_ID)" "$KEYCHAIN_NAME" || echo "❌ Приватный ключ не найден"
+          security find-key -c "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" "$KEYCHAIN_NAME" || echo "❌ Приватный ключ не найден"
 
           echo "⚙️ Создание dummy .app для теста подписи"
           mkdir -p Dummy.app/Contents/MacOS
@@ -362,7 +362,7 @@ jobs:
           chmod +x Dummy.app/Contents/MacOS/Dummy
 
           echo "✅ Проверка dry-run подписи dummy приложения"
-          codesign -s "Apple Distribution: ZENDEV LTD ($EXPECTED_TEAM_ID)" --dryrun --verbose Dummy.app || echo "❌ Подпись не удалась"
+          codesign -s "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" --dryrun --verbose Dummy.app || echo "❌ Подпись не удалась"
 
 
       - name: 🔍 Inspect Provisioning Profiles

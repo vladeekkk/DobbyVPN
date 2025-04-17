@@ -319,7 +319,7 @@ jobs:
           echo "$PROFILE_TUNNEL_BASE64" | base64 --decode > $PROFILE_TUNNEL
           echo "✅ Профиль tunnel сохранён в $PROFILE_TUNNEL"
           
-          echo "🔐 Создание и настройка keychain..."
+          echo "🔐 Создание и настройка keychain..." # kek
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           echo "✅ Keychain создан"
           

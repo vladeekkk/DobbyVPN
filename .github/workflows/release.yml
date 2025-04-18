@@ -409,13 +409,13 @@ jobs:
           cp "$PROFILE1_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
           cp "$PROFILE2_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
-      - name: 🔍 Inspect Provisioning Profiles
-        run: |
-          echo "📂 Расшифровка provisioning профиля MAIN..."
-          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/main.mobileprovision > main.plist
-          /usr/libexec/PlistBuddy -c "Print :Name" main.plist || true
-          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" main.plist || true
-          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" main.plist || true
+#      - name: 🔍 Inspect Provisioning Profiles
+#        run: |
+#          echo "📂 Расшифровка provisioning профиля MAIN..."
+#          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/main.mobileprovision > main.plist
+#          /usr/libexec/PlistBuddy -c "Print :Name" main.plist || true
+#          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" main.plist || true
+#          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" main.plist || true
 
 #          echo "📂 Расшифровка provisioning профиля TUNNEL..."
 #          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/tunnel.mobileprovision > tunnel.plist
@@ -435,15 +435,15 @@ jobs:
                      -archivePath $PWD/build/iosApp.xcarchive \
                      archive
 
-      - name: Build and Archive
-        run: |
-          cd ck-android/CkClient/iosApp
-          xcodebuild -project iosApp.xcodeproj \
-                     -scheme iosApp \
-                     -configuration Release \
-                     -sdk iphoneos \
-                     -archivePath $PWD/build/iosApp.xcarchive \
-                     archive
+#      - name: Build and Archive
+#        run: |
+#          cd ck-android/CkClient/iosApp
+#          xcodebuild -project iosApp.xcodeproj \
+#                     -scheme iosApp \
+#                     -configuration Release \
+#                     -sdk iphoneos \
+#                     -archivePath $PWD/build/iosApp.xcarchive \
+#                     archive
 
       - name: Export IPA
         run: |

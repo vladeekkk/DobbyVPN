@@ -363,20 +363,6 @@ jobs:
 #        run: |
 #          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:$CERT_P12_PASSWORD || echo "❌ Ошибка расшифровки p12"
 
-      - name: 🔍 Inspect Provisioning Profiles
-        run: |
-          echo "📂 Расшифровка provisioning профиля MAIN..."
-          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/main.mobileprovision > main.plist
-          /usr/libexec/PlistBuddy -c "Print :Name" main.plist || true
-          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" main.plist || true
-          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" main.plist || true
-
-          echo "📂 Расшифровка provisioning профиля TUNNEL..."
-          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/tunnel.mobileprovision > tunnel.plist
-          /usr/libexec/PlistBuddy -c "Print :Name" tunnel.plist || true
-          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" tunnel.plist || true
-          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" tunnel.plist || true
-
       - name: Build Kotlin Multiplatform
         run: |
           cd ck-android/CkClient
@@ -422,6 +408,21 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp "$PROFILE1_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
           cp "$PROFILE2_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: 🔍 Inspect Provisioning Profiles
+        run: |
+          echo "📂 Расшифровка provisioning профиля MAIN..."
+          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/main.mobileprovision > main.plist
+          /usr/libexec/PlistBuddy -c "Print :Name" main.plist || true
+          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" main.plist || true
+          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" main.plist || true
+
+#          echo "📂 Расшифровка provisioning профиля TUNNEL..."
+#          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/tunnel.mobileprovision > tunnel.plist
+#          /usr/libexec/PlistBuddy -c "Print :Name" tunnel.plist || true
+#          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" tunnel.plist || true
+#          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" tunnel.plist || true
+#
 
       - name: 📦 Build and Archive iOS App
         run: |

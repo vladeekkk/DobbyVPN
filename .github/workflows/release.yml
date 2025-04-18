@@ -304,7 +304,7 @@ jobs:
           
           echo "🔍 Проверка переменнытх:"
           echo "📦 DIST_CERT_BASE64 длина: ${#CERT_P12_BASE64}"
-          echo "🔑 P12_PASSWORD длина: ${#CERT_P12_PASSWORD}"
+          echo "🔑 CERT_P12_PASSWORD длина: ${#CERT_P12_PASSWORD}"
           echo "🔐 KEYCHAIN_PASSWORD длина: ${#KEYCHAIN_PASSWORD}"
           
           echo "📥 Декодируем и сохраняем .p12 и provisioning profiles..."
@@ -318,10 +318,10 @@ jobs:
           file "$CERT_PATH"
           
           echo "🔍 Попытка расшифровки через openssl..."
-          openssl pkcs12 -info -in "$CERT_PATH" -nodes -passin pass:"$P12_PASSWORD" || echo "❌ openssl не смог распаковать p12 (возможно, нужен openssl 3 или legacy флаг)"
+          openssl pkcs12 -info -in "$CERT_PATH" -nodes -passin pass:"$CERT_P12_PASSWORD" || echo "❌ openssl не смог распаковать p12 (возможно, нужен openssl 3 или legacy флаг)"
   
           echo "🔑 Пробуем импортировать через security..."
-          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "$P12_PASSWORD" -T /usr/bin/codesign || echo "❌ Импорт не удался (неверный пароль?)"
+          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "$CERT_P12_PASSWORD" -T /usr/bin/codesign || echo "❌ Импорт не удался (неверный пароль?)"
                 
           echo "🔐 Создание и настройка keychain..."
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
@@ -330,7 +330,7 @@ jobs:
           echo "✅ Keychain $KEYCHAIN_NAME создан и активен"
           
           echo "🔑 Импорт сертификата в keychain..."
-          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "$P12_PASSWORD" -T /usr/bin/codesign || echo "❌ Не удалось импортировать сертификат"
+          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "$CERT_P12_PASSWORD" -T /usr/bin/codesign || echo "❌ Не удалось импортировать сертификат"
           echo "✅ Сертификат импортирован"
           
           echo "🔧 Настройка доступа к приватному ключу..."
@@ -361,7 +361,7 @@ jobs:
 
       - name: 🔐 Проверка .p12 на CI
         run: |
-          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:$P12_PASSWORD || echo "❌ Ошибка расшифровки p12"
+          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:$CERT_P12_PASSWORD || echo "❌ Ошибка расшифровки p12"
 
       - name: 🔍 Inspect Provisioning Profiles
         run: |

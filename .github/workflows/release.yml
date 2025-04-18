@@ -434,16 +434,14 @@ jobs:
                      -sdk iphoneos \
                      -archivePath $PWD/build/iosApp.xcarchive \
                      archive
+              ls -lh $PWD/build
 
-#      - name: Build and Archive
-#        run: |
-#          cd ck-android/CkClient/iosApp
-#          xcodebuild -project iosApp.xcodeproj \
-#                     -scheme iosApp \
-#                     -configuration Release \
-#                     -sdk iphoneos \
-#                     -archivePath $PWD/build/iosApp.xcarchive \
-#                     archive
+              if [ -e "$PWD/build/iosApp.xcarchive" ]; then
+                  echo "✅ Archive created successfully!"
+              else
+                  echo "❌ Archive not found!"
+              exit 1
+              fi
 
       - name: Export IPA
         run: |
@@ -474,7 +472,7 @@ jobs:
                      -exportPath $PWD/build/ipa \
                      -exportOptionsPlist exportOptions.plist
 
-      - name: Upload IPA # kek
+      - name: Upload IPA
         uses: actions/upload-artifact@master
         with:
           name: iosApp.ipa

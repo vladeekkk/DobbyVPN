@@ -445,6 +445,7 @@ jobs:
 
       - name: Export IPA
         run: |
+          cd ck-android/CkClient/iosApp
           cat > exportOptions.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -476,7 +477,7 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: iosApp.ipa
-          path: build/ipa/*.ipa
+          path: ck-android/CkClient/iosApp/build/ipa/*.ipa
 
 #  release:
 #    runs-on: ubuntu-latest

@@ -287,81 +287,81 @@ jobs:
           go get ./...
           cd ..
 
-      - name: 🔐 Установка сертификатов и provisioning-профилей с отладкой
-        env:
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          CERT_P12_PASSWORD: ${{ secrets.CERT_P12_PASSWORD }}
-          CERT_P12_BASE64: ${{ secrets.CERT_P12_BASE64 }}
-          PROVISION_DOBBY_BASE64: ${{ secrets.PROVISION_DOBBY_BASE64 }}
-          PROVISION_DOBBY_TUNNEL_BASE64: ${{ secrets.PROVISION_DOBBY_TUNNEL_BASE64 }}
-        run: |
-          set -euo pipefail
-          
-          CERT_PATH="$RUNNER_TEMP/dist.p12"
-          PROFILE_MAIN="$RUNNER_TEMP/main.mobileprovision"
-          PROFILE_TUNNEL="$RUNNER_TEMP/tunnel.mobileprovision"
-          KEYCHAIN_NAME="build.keychain"
-          
-          echo "🔍 Проверка переменнытх:"
-          echo "📦 DIST_CERT_BASE64 длина: ${#CERT_P12_BASE64}"
-          echo "🔑 CERT_P12_PASSWORD длина: ${#CERT_P12_PASSWORD}"
-          echo "🔐 KEYCHAIN_PASSWORD длина: ${#KEYCHAIN_PASSWORD}"
-          
-          echo "📥 Декодируем и сохраняем .p12 и provisioning profiles..."
-          echo "CERT_P12_BASE64" | base64 --decode > "$CERT_PATH"
-          echo "PROVISION_DOBBY_BASE64" | base64 --decode > "$PROFILE_MAIN"
-          echo "PROVISION_DOBBY_TUNNEL_BASE64" | base64 --decode > "$PROFILE_TUNNEL"
-          echo "✅ Все файлы декодированы"
-          
-          echo "📁 Проверка файла сертификата:"
-          ls -lh "$CERT_PATH"
-          file "$CERT_PATH"
-          
-          echo "🔍 Попытка расшифровки через openssl..."
-          openssl pkcs12 -info -in "$CERT_PATH" -nodes -passin pass:"$CERT_P12_PASSWORD" || echo "❌ openssl не смог распаковать p12 (возможно, нужен openssl 3 или legacy флаг)"
-  
-          echo "🔑 Пробуем импортировать через security..."
-          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "$CERT_P12_PASSWORD" -T /usr/bin/codesign || echo "❌ Импорт не удался (неверный пароль?)"
-                
-          echo "🔐 Создание и настройка keychain..."
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
-          security default-keychain -s "$KEYCHAIN_NAME"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
-          echo "✅ Keychain $KEYCHAIN_NAME создан и активен"
-          
-          echo "🔑 Импорт сертификата в keychain..."
-          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "$CERT_P12_PASSWORD" -T /usr/bin/codesign || echo "❌ Не удалось импортировать сертификат"
-          echo "✅ Сертификат импортирован"
-          
-          echo "🔧 Настройка доступа к приватному ключу..."
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
-          echo "✅ Приватный ключ доступен для codesign"
-          
-          echo "📂 Установка provisioning profiles..."
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp "$PROFILE_MAIN" ~/Library/MobileDevice/Provisioning\ Profiles/
-          cp "$PROFILE_TUNNEL" ~/Library/MobileDevice/Provisioning\ Profiles/
-          echo "✅ Профили установлены"
-          
-          echo "🔍 Список доступных identities:"
-          security find-identity -v -p codesigning "$KEYCHAIN_NAME"
-          
-          echo "🔐 Проверка приватного ключа:"
-          security find-key -c "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" "$KEYCHAIN_NAME" || echo "❌ Приватный ключ не найден"
-          
-          echo "⚙️ Создание dummy-приложения для проверки подписи..."
-          mkdir -p Dummy.app/Contents/MacOS
-          echo -e "#!/bin/bash\necho Hello" > Dummy.app/Contents/MacOS/Dummy
-          chmod +x Dummy.app/Contents/MacOS/Dummy
-          
-          echo "✅ Подпись dummy-приложения (dry-run):"
-          codesign -s "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" --dryrun --verbose Dummy.app || echo "❌ Подпись не удалась"
-          
-          echo "🏁 Завершено"
+#      - name: 🔐 Установка сертификатов и provisioning-профилей с отладкой
+#        env:
+#          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+#          CERT_P12_PASSWORD: ${{ secrets.CERT_P12_PASSWORD }}
+#          CERT_P12_BASE64: ${{ secrets.CERT_P12_BASE64 }}
+#          PROVISION_DOBBY_BASE64: ${{ secrets.PROVISION_DOBBY_BASE64 }}
+#          PROVISION_DOBBY_TUNNEL_BASE64: ${{ secrets.PROVISION_DOBBY_TUNNEL_BASE64 }}
+#        run: |
+#          set -euo pipefail
+#
+#          CERT_PATH="$RUNNER_TEMP/dist.p12"
+#          PROFILE_MAIN="$RUNNER_TEMP/main.mobileprovision"
+#          PROFILE_TUNNEL="$RUNNER_TEMP/tunnel.mobileprovision"
+#          KEYCHAIN_NAME="build.keychain"
+#
+#          echo "🔍 Проверка переменнытх:"
+#          echo "📦 DIST_CERT_BASE64 длина: ${#CERT_P12_BASE64}"
+#          echo "🔑 CERT_P12_PASSWORD длина: ${#CERT_P12_PASSWORD}"
+#          echo "🔐 KEYCHAIN_PASSWORD длина: ${#KEYCHAIN_PASSWORD}"
+#
+#          echo "📥 Декодируем и сохраняем .p12 и provisioning profiles..."
+#          echo "CERT_P12_BASE64" | base64 --decode > "$CERT_PATH"
+#          echo "PROVISION_DOBBY_BASE64" | base64 --decode > "$PROFILE_MAIN"
+#          echo "PROVISION_DOBBY_TUNNEL_BASE64" | base64 --decode > "$PROFILE_TUNNEL"
+#          echo "✅ Все файлы декодированы"
+#
+#          echo "📁 Проверка файла сертификата:"
+#          ls -lh "$CERT_PATH"
+#          file "$CERT_PATH"
+#
+#          echo "🔍 Попытка расшифровки через openssl..."
+#          openssl pkcs12 -info -in "$CERT_PATH" -nodes -passin pass:"$CERT_P12_PASSWORD" || echo "❌ openssl не смог распаковать p12 (возможно, нужен openssl 3 или legacy флаг)"
+#
+#          echo "🔑 Пробуем импортировать через security..."
+#          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "$CERT_P12_PASSWORD" -T /usr/bin/codesign || echo "❌ Импорт не удался (неверный пароль?)"
+#
+#          echo "🔐 Создание и настройка keychain..."
+#          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+#          security default-keychain -s "$KEYCHAIN_NAME"
+#          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+#          echo "✅ Keychain $KEYCHAIN_NAME создан и активен"
+#
+#          echo "🔑 Импорт сертификата в keychain..."
+#          security import "$CERT_PATH" -k "$KEYCHAIN_NAME" -P "$CERT_P12_PASSWORD" -T /usr/bin/codesign || echo "❌ Не удалось импортировать сертификат"
+#          echo "✅ Сертификат импортирован"
+#
+#          echo "🔧 Настройка доступа к приватному ключу..."
+#          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_NAME"
+#          echo "✅ Приватный ключ доступен для codesign"
+#
+#          echo "📂 Установка provisioning profiles..."
+#          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+#          cp "$PROFILE_MAIN" ~/Library/MobileDevice/Provisioning\ Profiles/
+#          cp "$PROFILE_TUNNEL" ~/Library/MobileDevice/Provisioning\ Profiles/
+#          echo "✅ Профили установлены"
+#
+#          echo "🔍 Список доступных identities:"
+#          security find-identity -v -p codesigning "$KEYCHAIN_NAME"
+#
+#          echo "🔐 Проверка приватного ключа:"
+#          security find-key -c "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" "$KEYCHAIN_NAME" || echo "❌ Приватный ключ не найден"
+#
+#          echo "⚙️ Создание dummy-приложения для проверки подписи..."
+#          mkdir -p Dummy.app/Contents/MacOS
+#          echo -e "#!/bin/bash\necho Hello" > Dummy.app/Contents/MacOS/Dummy
+#          chmod +x Dummy.app/Contents/MacOS/Dummy
+#
+#          echo "✅ Подпись dummy-приложения (dry-run):"
+#          codesign -s "Apple Distribution: ZENDEV LTD (F6CHJX72K5)" --dryrun --verbose Dummy.app || echo "❌ Подпись не удалась"
+#
+#          echo "🏁 Завершено"
 
-      - name: 🔐 Проверка .p12 на CI
-        run: |
-          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:$CERT_P12_PASSWORD || echo "❌ Ошибка расшифровки p12"
+#      - name: 🔐 Проверка .p12 на CI
+#        run: |
+#          openssl pkcs12 -info -in "$CERT_PATH" -passin pass:$CERT_P12_PASSWORD || echo "❌ Ошибка расшифровки p12"
 
       - name: 🔍 Inspect Provisioning Profiles
         run: |
@@ -382,10 +382,6 @@ jobs:
           cd ck-android/CkClient
           chmod +x gradlew
           ./gradlew linkReleaseFrameworkIosArm64
-          cd app
-          echo $(ls)
-          cd build
-          echo $(ls)
 #          ./gradlew iosArm64MainKLibrary
 
       - name: Upload iOS Framework as artifact
@@ -393,6 +389,50 @@ jobs:
         with:
           name: app-framework
           path: app/build/bin/iosArm64/releaseFramework/app.framework
+
+      - name: Build iOS App
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          CERT_P12_PASSWORD: ${{ secrets.CERT_P12_PASSWORD }}
+          CERT_P12_BASE64: ${{ secrets.CERT_P12_BASE64 }}
+          PROVISION_DOBBY_BASE64: ${{ secrets.PROVISION_DOBBY_BASE64 }}
+          PROVISION_DOBBY_TUNNEL_BASE64: ${{ secrets.PROVISION_DOBBY_TUNNEL_BASE64 }}
+        run: |
+          set -euo pipefail
+
+          # Prepare paths
+          CERT_PATH="$RUNNER_TEMP/cert.p12"
+          PROFILE1_PATH="$RUNNER_TEMP/profile1.mobileprovision"
+          PROFILE2_PATH="$RUNNER_TEMP/profile2.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain"
+
+          # Decode base64 secrets
+          echo "$CERT_P12_BASE64" | base64 --decode > "$CERT_PATH"
+          echo "$PROVISION_DOBBY_BASE64" | base64 --decode > "$PROFILE1_PATH"
+          echo "$PROVISION_DOBBY_TUNNEL_BASE64" | base64 --decode > "$PROFILE2_PATH"
+
+          # Setup keychain and import certificate
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security default-keychain -s "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$CERT_P12_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          # Install provisioning profiles
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp "$PROFILE1_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp "$PROFILE2_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: 📦 Build and Archive iOS App
+        run: |
+          set -euo pipefail
+          cd ck-android/CkClient/iosApp
+          xcodebuild -project iosApp.xcodeproj \
+                     -scheme iosApp \
+                     -configuration Release \
+                     -sdk iphoneos \
+                     -archivePath $PWD/build/iosApp.xcarchive \
+                     archive
 
       - name: Build and Archive
         run: |

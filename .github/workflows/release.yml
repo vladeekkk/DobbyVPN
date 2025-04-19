@@ -447,9 +447,9 @@ jobs:
       - name: Export IPA
         run: |
           cd ck-android/CkClient/iosApp
-          echo "kek1"
-          security cms -D -i profile1.mobileprovision | plutil -extract Name raw -o - -
-          security cms -D -i profile2.mobileprovision | plutil -extract Name raw -o - -
+#          echo "kek1"
+#          security cms -D -i profile1.mobileprovision | plutil -extract Name raw -o - -
+#          security cms -D -i profile2.mobileprovision | plutil -extract Name raw -o - -
           echo "kek2"
           security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/profile1.mobileprovision | plutil -extract Name raw -o - -
           security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/profile2.mobileprovision | plutil -extract Name raw -o - -

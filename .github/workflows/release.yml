@@ -446,14 +446,11 @@ jobs:
 
       - name: Export IPA
         run: |
-          cd ck-android/CkClient/iosApp
-#          echo "kek1"
-#          security cms -D -i profile1.mobileprovision | plutil -extract Name raw -o - -
-#          security cms -D -i profile2.mobileprovision | plutil -extract Name raw -o - -
           echo "kek2"
           security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/profile1.mobileprovision | plutil -extract Name raw -o - -
           security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/profile2.mobileprovision | plutil -extract Name raw -o - -
           echo "kek3"
+          cd ck-android/CkClient/iosApp
           cat > exportOptions.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

@@ -423,6 +423,14 @@ jobs:
 #          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" tunnel.plist || true
 #          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" tunnel.plist || true
 #
+      - name: List installed provisioning profiles
+        run: |
+          echo "Listing provisioning profiles in ~/Library/MobileDevice/Provisioning Profiles"
+          ls -l ~/Library/MobileDevice/Provisioning\ Profiles
+          for profile in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
+            echo "----"
+            security cms -D -i "$profile" | plutil -extract Name xml1 -o - - | xmllint --format -
+          done
 
       - name: 📦 Build and Archive iOS App
         run: |

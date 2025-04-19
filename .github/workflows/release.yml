@@ -459,9 +459,9 @@ jobs:
             <key>provisioningProfiles</key>
             <dict>
               <key>com.dobby.vpn</key>
-              <string>DobbyVPNAppStore</string>
+              <string>profile1</string>
               <key>com.dobby.vpn.tunnel</key>
-              <string>DobbyVPNTunnelAppStore</string>
+              <string>profile2</string>
             </dict>
             <key>teamID</key>
             <string>F6CHJX72K5</string>

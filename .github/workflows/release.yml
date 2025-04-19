@@ -409,20 +409,13 @@ jobs:
           cp "$PROFILE1_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
           cp "$PROFILE2_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
 
-#      - name: 🔍 Inspect Provisioning Profiles
-#        run: |
-#          echo "📂 Расшифровка provisioning профиля MAIN..."
-#          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/main.mobileprovision > main.plist
-#          /usr/libexec/PlistBuddy -c "Print :Name" main.plist || true
-#          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" main.plist || true
-#          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" main.plist || true
+      - name: Verify provisioning profile contents
+        run: |
+          for profile in ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision; do
+            echo "== $profile =="
+            security cms -D -i "$profile" | grep network || echo "No Network Extension entitlement"
+          done
 
-#          echo "📂 Расшифровка provisioning профиля TUNNEL..."
-#          security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/tunnel.mobileprovision > tunnel.plist
-#          /usr/libexec/PlistBuddy -c "Print :Name" tunnel.plist || true
-#          /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" tunnel.plist || true
-#          /usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" tunnel.plist || true
-#
       - name: List installed provisioning profiles
         run: |
           echo "Listing provisioning profiles in ~/Library/MobileDevice/Provisioning Profiles"

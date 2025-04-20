@@ -83,7 +83,6 @@ func (s healthCheckStatus) String() string {
 	)
 }
 
-// StartHealthCheck(period int, sendMetrics bool), StopHealthCheck(), Status()
 func StartHealthCheck(period int, sendMetrics bool) {
 	mu.Lock()
 	defer mu.Unlock()

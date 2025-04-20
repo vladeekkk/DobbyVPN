@@ -2,7 +2,9 @@ package healthcheck
 
 import (
 	"context"
+	"fmt"
 	"go_client/common"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -14,6 +16,8 @@ type healthChecker struct {
 	period      int32
 }
 
+var checker *healthChecker
+var mu sync.Mutex
 var lastStatus atomic.Pointer[healthCheckStatus]
 
 func newHealthCheck(sendMetrics bool, period int32) *healthChecker {
@@ -65,4 +69,44 @@ type healthCheckStatus struct {
 
 	reconnected    bool
 	reconnectError error
+}
+
+func (s healthCheckStatus) String() string {
+	return fmt.Sprintf(
+		"at: %v, isHealthy: %v, handshakeMs: %v, err: %v, reconnected: %v, reconnectError: %v",
+		s.at,
+		s.isHealthy,
+		s.handshakeMs,
+		s.err,
+		s.reconnected,
+		s.reconnectError,
+	)
+}
+
+// StartHealthCheck(period int, sendMetrics bool), StopHealthCheck(), Status()
+func StartHealthCheck(period int, sendMetrics bool) {
+	mu.Lock()
+	defer mu.Unlock()
+	if checker != nil {
+		checker.stop()
+	}
+	checker = newHealthCheck(sendMetrics, int32(period))
+	go checker.start()
+}
+
+func StopHealthCheck() {
+	mu.Lock()
+	defer mu.Unlock()
+	if checker != nil {
+		checker.stop()
+		checker = nil
+	}
+}
+
+func Status() string {
+	status := lastStatus.Load()
+	if status == nil {
+		return ""
+	}
+	return status.String()
 }

@@ -59,6 +59,17 @@ func (c *CommonClient) GetClientNames() []string {
 	return names
 }
 
+func (c *CommonClient) RefreshAll() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for _, client := range c.vpnClients {
+		if err := client.Refresh(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 var Client = &CommonClient{
 	vpnClients: make(map[string]vpnClient),
 }

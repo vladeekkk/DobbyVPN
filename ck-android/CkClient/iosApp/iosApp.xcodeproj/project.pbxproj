@@ -16,8 +16,7 @@
 		A12013AD2D80E0FA00D43A3A /* MyLibrary.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A120131F2D7DB2A900D43A3A /* MyLibrary.xcframework */; settings = {ATTRIBUTES = (Required, ); }; };
 		A15F0FD42D874CDC007FA45D /* CommonDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A15F0FCE2D874CDC007FA45D /* CommonDI.framework */; };
 		A15F0FD52D874CDC007FA45D /* CommonDI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A15F0FCE2D874CDC007FA45D /* CommonDI.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		A15F0FEA2D874D38007FA45D /* CommonDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A15F0FCE2D874CDC007FA45D /* CommonDI.framework */; };
-		A15F0FEB2D874D38007FA45D /* CommonDI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A15F0FCE2D874CDC007FA45D /* CommonDI.framework */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A15F0FEA2D874D38007FA45D /* CommonDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A15F0FCE2D874CDC007FA45D /* CommonDI.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,17 +62,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				A15F0FD52D874CDC007FA45D /* CommonDI.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A15F0FEE2D874D38007FA45D /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				A15F0FEB2D874D38007FA45D /* CommonDI.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -250,7 +238,6 @@
 				A120139B2D80DE3100D43A3A /* Sources */,
 				A120139C2D80DE3100D43A3A /* Frameworks */,
 				A120139D2D80DE3100D43A3A /* Resources */,
-				A15F0FEE2D874D38007FA45D /* Embed Frameworks */,
 			);
 			buildRules = (
 			);

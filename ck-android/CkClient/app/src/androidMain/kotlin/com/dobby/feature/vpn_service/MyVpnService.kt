@@ -10,16 +10,13 @@ import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import cloak_outline.OutlineDevice
-import cloak_outline.Cloak_outline
 import com.dobby.awg.TunnelManager
 import com.dobby.awg.TunnelState
+import com.dobby.feature.logging.Logger
 import com.dobby.feature.main.domain.ConnectionStateRepository
 import com.dobby.feature.main.domain.DobbyConfigsRepository
-import com.dobby.domain.DobbyConfigsRepositoryImpl
 import com.dobby.feature.main.domain.VpnInterface
 import com.dobby.feature.vpn_service.domain.CloakConnectionInteractor
-import com.dobby.util.Logger
 import com.dobby.feature.vpn_service.domain.IpFetcher
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
@@ -35,49 +32,45 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.nio.ByteBuffer
 
+private const val IS_FROM_UI = "isLaunchedFromUi"
+
 class MyVpnService : VpnService() {
 
     companion object {
 
         fun createIntent(context: Context): Intent {
-            return Intent(context, MyVpnService::class.java)
+            return Intent(context, MyVpnService::class.java).apply {
+                putExtra(IS_FROM_UI, true)
+            }
         }
     }
 
-    private lateinit var dobbyConfigsRepository: DobbyConfigsRepository
-
     private val tunnelManager = TunnelManager(this)
     private var vpnInterface: ParcelFileDescriptor? = null
-    private var device: OutlineDevice? = null
-    private val ipFetcher: IpFetcher = IpFetcher()
-    private val vpnInterfaceFactory: DobbyVpnInterfaceFactory = DobbyVpnInterfaceFactory()
 
+    private val logger: Logger by inject()
+    private val ipFetcher: IpFetcher by inject()
+    private val vpnInterfaceFactory: DobbyVpnInterfaceFactory by inject()
     private val cloakConnectInteractor: CloakConnectionInteractor by inject()
+    private val dobbyConfigsRepository: DobbyConfigsRepository by inject()
+    private val outlineLibFacade: OutlineLibFacade by inject()
 
     private val bufferSize = 65536
     private var inputStream: FileInputStream? = null
     private var outputStream: FileOutputStream? = null
-    private var check = true
 
     override fun onCreate() {
         super.onCreate()
-
-        dobbyConfigsRepository = DobbyConfigsRepositoryImpl(
-            prefs = getSharedPreferences("DobbyPrefs", MODE_PRIVATE)
-        )
-
-        Logger.init(this)
-        Logger.log("MyVpnService: Start curl before connection")
+        logger.log("Tunnel: Start curl before connection")
         CoroutineScope(Dispatchers.IO).launch {
             val ipAddress = ipFetcher.fetchIp()
             withContext(Dispatchers.Main) {
+                ConnectionStateRepository.update(isConnected = true)
                 if (ipAddress != null) {
-                    Logger.log( "MyVpnService: response from curl: $ipAddress")
+                    logger.log("Tunnel: response from curl: $ipAddress")
                     setupVpn()
-                    //checkServerAvailability(iqAddress)
-
                 } else {
-                    Logger.log("MyVpnService: Failed to fetch IP, cancelling VPN setup.")
+                    logger.log("Tunnel: Failed to fetch IP, cancelling VPN setup.")
                     stopSelf()
                 }
             }
@@ -85,43 +78,12 @@ class MyVpnService : VpnService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (dobbyConfigsRepository.getVpnInterface()) {
-            VpnInterface.CLOAK_OUTLINE -> {
-                val connectionFlag = dobbyConfigsRepository.getIsOutlineEnabled()
-                check = connectionFlag
-                if (connectionFlag) {
-                    val apiKey = dobbyConfigsRepository.getOutlineKey()
-                    Logger.log("!!! Starting connecting Outline")
-                    device = Cloak_outline.newOutlineDevice(apiKey)
-                    enableCloakIfNeeded()
-                    ConnectionStateRepository.update(isConnected = true) // todo move somewhere
-                } else {
-                    Logger.log("!!! Starting disconnecting Outline")
-                    vpnInterface?.close()
-                    ConnectionStateRepository.update(isConnected = false) // todo move somewhere
-                    stopSelf()
-                }
-
-                return START_STICKY
-            }
-            VpnInterface.AMNEZIA_WG -> {
-                if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
-                    Logger.log("!!! Starting AmneziaWG")
-                    val stringConfig = dobbyConfigsRepository.getAwgConfig()
-                    val state = if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
-                        TunnelState.UP
-                    } else {
-                        TunnelState.DOWN
-                    }
-                    tunnelManager.updateState(stringConfig, state)
-                } else {
-                    Logger.log("!!! Stopping AmneziaWG")
-                    tunnelManager.updateState(null, TunnelState.DOWN)
-                }
-
-                return START_STICKY
-            }
+        val isServiceStartedFromUi = intent?.getBooleanExtra(IS_FROM_UI, false) ?: false
+        when(dobbyConfigsRepository.getVpnInterface()) {
+            VpnInterface.CLOAK_OUTLINE -> startCloakOutline(isServiceStartedFromUi)
+            VpnInterface.AMNEZIA_WG -> startAwg()
         }
+        return START_STICKY
     }
 
     override fun onDestroy() {
@@ -136,23 +98,58 @@ class MyVpnService : VpnService() {
         tunnelManager.updateState(null, TunnelState.DOWN)
     }
 
-    private fun enableCloakIfNeeded() {
-        val shouldEnableCloak = dobbyConfigsRepository.getIsCloakEnabled()
-        val cloakConfig = dobbyConfigsRepository.getCloakConfig()
-        if (shouldEnableCloak) {
+    private fun startCloakOutline(isServiceStartedFromUi: Boolean) {
+        val shouldTurnOutlineOn = dobbyConfigsRepository.getIsOutlineEnabled()
+        if (shouldTurnOutlineOn || !isServiceStartedFromUi) {
+            val apiKey = dobbyConfigsRepository.getOutlineKey()
+            if (apiKey.isEmpty()) {
+                logger.log("Previously used outline apiKey is empty")
+                return
+            }
+            logger.log("!!! Start connecting Outline")
+            outlineLibFacade.init(apiKey)
+            enableCloakIfNeeded(force = !isServiceStartedFromUi)
+        } else {
+            logger.log("!!! Start disconnecting Outline")
+            vpnInterface?.close()
+            ConnectionStateRepository.update(isConnected = false) // todo move somewhere
+            stopSelf()
+        }
+    }
+
+    private fun startAwg() {
+        if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
+            logger.log("!!! Starting AmneziaWG")
+            val stringConfig = dobbyConfigsRepository.getAwgConfig()
+            val state = if (dobbyConfigsRepository.getIsAmneziaWGEnabled()) {
+                TunnelState.UP
+            } else {
+                TunnelState.DOWN
+            }
+            tunnelManager.updateState(stringConfig, state)
+        } else {
+            logger.log("!!! Stopping AmneziaWG")
+            tunnelManager.updateState(null, TunnelState.DOWN)
+        }
+    }
+
+    private fun enableCloakIfNeeded(force: Boolean) {
+        val shouldEnableCloak = dobbyConfigsRepository.getIsCloakEnabled() || force
+        val cloakConfig = dobbyConfigsRepository.getCloakConfig().ifEmpty { return }
+        if (shouldEnableCloak && cloakConfig.isNotEmpty()) {
             CoroutineScope(Dispatchers.IO).launch {
-                Logger.log("!!!Cloak start connecting...")
+                logger.log("!!!Cloak: connect start")
                 val result = cloakConnectInteractor.connect(config = cloakConfig)
-                Logger.log("!!!Cloak connection result is $result")
+                logger.log("!!!Cloak connection result is $result")
             }
         } else {
-            Logger.log("!!! You chose not to use Cloak")
+            logger.log("!!! Cloak is disabled. Config isEmpty == ${cloakConfig.isEmpty()}")
         }
     }
 
     private fun disableCloakIfNeeded() {
         if (dobbyConfigsRepository.getIsCloakEnabled()) {
-            Logger.log("!!! Disabling Cloak!")
+            logger.log("!!! Disabling Cloak!")
             CoroutineScope(Dispatchers.IO).launch {
                 cloakConnectInteractor.disconnect()
                 dobbyConfigsRepository.setIsCloakEnabled(false)
@@ -169,45 +166,29 @@ class MyVpnService : VpnService() {
             inputStream = FileInputStream(vpnInterface?.fileDescriptor)
             outputStream = FileOutputStream(vpnInterface?.fileDescriptor)
 
-            Logger.log("MyVpnService: VPN Interface Created Successfully")
+            logger.log("VPN Interface Created Successfully")
 
             CoroutineScope(Dispatchers.IO).launch {
-                setupTunnel()
-                Logger.log("MyVpnService: Start function startReadingPackets()")
+                logger.log("Start reading packets")
                 startReadingPackets()
-                Logger.log("MyVpnService: Start function startWritingPackets()")
+                logger.log("Start writing packets")
                 startWritingPackets()
 
                 logRoutingTable()
 
-                Logger.log("MyVpnService: Start function resolveAndLogDomain(\"google.com\")")
+                logger.log("Start function resolveAndLogDomain('google.com')")
                 val ipAddress = resolveAndLogDomain("google.com")
-                Logger.log("MyVpnService: Start function ping(\"1.1.1.1\")")
+                logger.log("Start function ping('1.1.1.1')")
                 ping("1.1.1.1").await()
-                if (ipAddress != null) {
-                    checkServerAvailability(ipAddress)
+                ipAddress?.let(::checkServerAvailability)
+                    ?: logger.log("MyVpnService: Unable to resolve IP for google.com")
 
-                } else {
-                    Logger.log("MyVpnService: Unable to resolve IP for google.com")
-                }
-
-                Logger.log("MyVpnService: Start curl after connection")
+                logger.log("Start curl after connection")
                 val response = ipFetcher.fetchIp()
-                Logger.log("MyVpnService: response from curl: $response")
+                logger.log("Response from curl: $response")
             }
         } else {
-            Logger.log("MyVpnService: Failed to Create VPN Interface")
-        }
-    }
-
-    private suspend fun setupTunnel() {
-        withContext(Dispatchers.IO) {
-            try {
-                Logger.log("MyVpnService: Start function setupTunnel()")
-                Logger.log("MyVpnService: End of function setupTunnel")
-            } catch (e: Exception) {
-                Logger.log("MyVpnService: Failed to setup tunnel: ${e.message}")
-            }
+            logger.log("Tunnel: Failed to Create VPN Interface")
         }
     }
 
@@ -227,10 +208,10 @@ class MyVpnService : VpnService() {
 
                 process.waitFor()
 
-                Logger.log("MyVpnService: Routing Table:\n$output")
+                logger.log("Routing Table:\n$output")
 
             } catch (e: Exception) {
-                Logger.log("MyVpnService: Failed to retrieve routing table: ${e.message}")
+                logger.log("Failed to retrieve routing table: ${e.message}")
             }
         }
     }
@@ -241,17 +222,17 @@ class MyVpnService : VpnService() {
                 withTimeout(5000L) {
                     val address = InetAddress.getByName(domain)
                     val ipAddress = address.hostAddress
-                    Logger.log("MyVpnService: Domain resolved successfully. Domain: $domain, IP: $ipAddress")
+                    logger.log("VpnService: Domain resolved successfully. Domain: $domain, IP: $ipAddress")
                     ipAddress
                 }
             } catch (e: TimeoutCancellationException) {
-                Logger.log("MyVpnService: Domain resolution timed out. Domain: $domain")
+                logger.log("VpnService: Domain resolution timed out. Domain: $domain")
                 null
             } catch (e: UnknownHostException) {
-                Logger.log("MyVpnService: Failed to resolve domain. Domain: $domain: ${e.message}")
+                logger.log("VpnService: Failed to resolve domain. Domain: $domain: ${e.message}")
                 null
             } catch (e: Exception) {
-                Logger.log("MyVpnService: Exception during domain resolution. Domain: $domain, Error: ${e.message}")
+                logger.log("VpnService: Exception during domain resolution. Domain: $domain, Error: ${e.message}")
                 null
             }
         }
@@ -273,10 +254,10 @@ class MyVpnService : VpnService() {
                 }
 
                 process.waitFor()
-                Logger.log("MyVpnService: Ping output:\n$output")
+                logger.log("VpnService: Ping output:\n$output")
                 deferred.complete(Unit)
             } catch (e: Exception) {
-                Logger.log("MyVpnService: Failed to execute ping command: ${e.message}")
+                logger.log("MyVpnService: Failed to execute ping command: ${e.message}")
                 deferred.completeExceptionally(e)
             }
         }
@@ -289,20 +270,17 @@ class MyVpnService : VpnService() {
                 val buffer = ByteBuffer.allocate(bufferSize)
 
                 while (true) {
-                    if (check) {
-                        try {
-                            val length = inputStream?.read(buffer.array()) ?: 0
-                            if (length > 0) {
-                                val packetData: ByteArray = buffer.array().copyOfRange(0, length)
-                                device?.write(packetData)
-                                // val hexString = packetData.joinToString(separator = " ") { byte -> "%02x".format(byte) }
-                                // Logger.log("MyVpnService: Packet Data Written (Hex): $hexString")
-                            }
-                        } catch (e: Exception) {
-                            Logger.log(
-                                "MyVpnService: Failed to write packet to Outline: ${e.message}"
-                            )
+                    try {
+                        val length = inputStream?.read(buffer.array()) ?: 0
+
+                        if (length > 0) {
+                            val packetData: ByteArray = buffer.array().copyOfRange(0, length)
+                            outlineLibFacade.writeData(packetData)
+                            // val hexString = packetData.joinToString(separator = " ") { byte -> "%02x".format(byte) }
+                            // Logger.log("MyVpnService: Packet Data Written (Hex): $hexString")
                         }
+                    } catch (e: Exception) {
+                        logger.log("VpnService: Failed to write packet to Outline: ${e.message}")
                     }
                     buffer.clear()
                 }
@@ -332,19 +310,19 @@ class MyVpnService : VpnService() {
 //                        response.append(line).append("\n")
 //                    }
 
-                    Logger.log("MyVpnService: Successfully reached $host on port 443 via TCP")
+                    logger.log("VpnService: Successfully reached $host on port 443 via TCP")
                     //Logger.log("MyVpnService: Response from server:\n$response")
 
 //                    writer.close()
 //                    reader.close()
                     socket.close()
                 } else {
-                    Logger.log("MyVpnService: Failed to reach $host on port 443 via TCP")
+                    logger.log("VpnService: Failed to reach $host on port 443 via TCP")
                 }
             } catch (e: SocketTimeoutException) {
-                Logger.log("MyVpnService: Timeout error when connecting to $host on port 443 via TCP: ${e.message}")
+                logger.log("VpnService: Timeout error when connecting to $host on port 443 via TCP: ${e.message}")
             } catch (e: Exception) {
-                Logger.log("MyVpnService: Error when connecting to $host on port 443 via TCP: ${e.message}")
+                logger.log("VpnService: Error when connecting to $host on port 443 via TCP: ${e.message}")
             }
         }
     }
@@ -362,17 +340,15 @@ class MyVpnService : VpnService() {
                         //}
                         //buffer.clear()
                         //Logger.log("MyVpnService: read packet from tunnel")
-                        if (check) {
-                            val packetData: ByteArray? = device?.read()
+                        val packetData: ByteArray? = outlineLibFacade.readData()
 
-                            packetData?.let {
-                                outputStream?.write(it)
-                                //val hexString = it.joinToString(separator = " ") { byte -> "%02x".format(byte) }
-                                //Logger.log("MyVpnService: Packet Data Read (Hex): $hexString")
-                            } ?: Unit // Logger.log("No data read from Outline") TODO remove comment
-                        }
+                        packetData?.let {
+                            outputStream?.write(it)
+                            //val hexString = it.joinToString(separator = " ") { byte -> "%02x".format(byte) }
+                            //Logger.log("MyVpnService: Packet Data Read (Hex): $hexString")
+                        } ?: Unit // Logger.log("No data read from Outline") TODO remove comment
                     } catch (e: Exception) {
-                        Logger.log("MyVpnService: Failed to read packet from tunnel: ${e.message}")
+                        logger.log("VpnService: Failed to read packet from tunnel: ${e.message}")
                     }
                     buffer.clear()
                 }

@@ -11,6 +11,7 @@ import com.dobby.feature.main.ui.MainUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -24,17 +25,18 @@ class MainViewModel(
 
     val uiState: StateFlow<MainUiState> = _uiState
 
-    val checkVpnPermissionEvents = MutableSharedFlow<Unit>()
+    private val _checkVpnPermissionEvents = MutableSharedFlow<Unit>()
+    val checkVpnPermissionEvents = _checkVpnPermissionEvents.asSharedFlow()
 
     init {
         _uiState.tryEmit(
             MainUiState(
                 cloakJson = configsRepository.getCloakConfig(),
-                outlineKey = configsRepository.getOutlineKey()
+                outlineKey = configsRepository.getOutlineKey(),
+                isCloakEnabled = configsRepository.getIsCloakEnabled()
             )
         )
 
-        ConnectionStateRepository.init(false)
         viewModelScope.launch {
             connectionStateRepository.observe().collect { isConnected ->
                 val newState = _uiState.value.copy(isConnected = isConnected)
@@ -52,7 +54,13 @@ class MainViewModel(
         viewModelScope.launch {
             when (ConnectionStateRepository.isConnected()) {
                 true -> stopVpnService()
-                false -> checkVpnPermissionEvents.emit(Unit)
+                false -> {
+                    if (isPermissionCheckNeeded) {
+                        _checkVpnPermissionEvents.emit(Unit)
+                    } else {
+                        startVpnService()
+                    }
+                }
             }
         }
     }
@@ -87,7 +95,7 @@ class MainViewModel(
 
     fun onAwgConnect(config: String) {
         viewModelScope.launch {
-            checkVpnPermissionEvents.emit(Unit)
+            _checkVpnPermissionEvents.emit(Unit)
         }
 
         configsRepository.setAwgConfig(config)
@@ -97,9 +105,6 @@ class MainViewModel(
     }
 
     fun onAwgDisconnect() {
-        viewModelScope.launch {
-            checkVpnPermissionEvents.emit(Unit)
-        }
 
         configsRepository.setAwgConfig(null)
         configsRepository.setIsAmneziaWGEnabled(false)

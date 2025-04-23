@@ -59,8 +59,8 @@ fun DobbySocksScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val scrollState = rememberScrollState()
 
-    val isCloakEnabled = remember { mutableStateOf(true) }
     val uiState by viewModel.uiState.collectAsState()
+    val isCloakEnabled = remember { mutableStateOf(uiState.isCloakEnabled) }
 
     var cloakJson by remember { mutableStateOf(uiState.cloakJson) }
     var apiKey by remember { mutableStateOf(uiState.outlineKey) }

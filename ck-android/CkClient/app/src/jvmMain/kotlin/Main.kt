@@ -1,15 +1,11 @@
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.dobby.di.startDI
-import com.dobby.feature.main.presentation.MainViewModel
 import com.dobby.navigation.App
 import com.sun.jna.Platform
-import org.koin.mp.KoinPlatform
 import java.io.File
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-
-fun getMainViewModel(): MainViewModel = KoinPlatform.getKoin().get()
 
 fun main() = application {
     startDI(listOf(jvmMainModule, jvmVpnModule)){}
@@ -32,6 +28,6 @@ fun main() = application {
 
     // Launch the main window and call your shared App composable.
     Window(onCloseRequest = ::exitApplication, title = "Dobby VPN 13") {
-        App(mainViewModel = getMainViewModel())
+        App()
     }
 }

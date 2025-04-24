@@ -6,17 +6,17 @@ import com.dobby.feature.main.domain.AwgManager
 import com.dobby.feature.main.domain.VpnManager
 import com.dobby.feature.main.domain.ConnectionStateRepository
 import com.dobby.feature.main.domain.DobbyConfigsRepository
+import com.dobby.feature.main.domain.PermissionEventsChannel
 import com.dobby.feature.main.domain.VpnInterface
 import com.dobby.feature.main.ui.MainUiState
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 class MainViewModel(
     private val configsRepository: DobbyConfigsRepository,
     private val connectionStateRepository: ConnectionStateRepository,
+    private val permissionEventsChannel: PermissionEventsChannel,
     private val vpnManager: VpnManager,
     private val awgManager: AwgManager,
 ) : ViewModel() {
@@ -24,9 +24,6 @@ class MainViewModel(
     private val _uiState = MutableStateFlow(MainUiState())
 
     val uiState: StateFlow<MainUiState> = _uiState
-
-    private val _checkVpnPermissionEvents = MutableSharedFlow<Unit>()
-    val checkVpnPermissionEvents = _checkVpnPermissionEvents.asSharedFlow()
 
     init {
         _uiState.tryEmit(
@@ -42,6 +39,9 @@ class MainViewModel(
                 val newState = _uiState.value.copy(isConnected = isConnected)
                 _uiState.tryEmit(newState)
             }
+            permissionEventsChannel
+                .observePermissionGrantedEvents()
+                .collect { isPermissionGranted -> startVpn(isPermissionGranted) }
         }
     }
 
@@ -56,7 +56,7 @@ class MainViewModel(
                 true -> stopVpnService()
                 false -> {
                     if (isPermissionCheckNeeded) {
-                        _checkVpnPermissionEvents.emit(Unit)
+                        permissionEventsChannel.checkPermissions()
                     } else {
                         startVpnService()
                     }
@@ -72,8 +72,8 @@ class MainViewModel(
         configsRepository.setIsCloakEnabled(isCloakEnabled)
     }
 
-    fun checkPermissionAndStartVpn(isGranted: Boolean) {
-        if (isGranted) {
+    private fun startVpn(isPermissionGranted: Boolean) {
+        if (isPermissionGranted) {
             startVpnService()
         } else {
             Unit // TODO Implement Toast logic or compose snackbar
@@ -94,9 +94,7 @@ class MainViewModel(
     fun getAwgVersion(): String = awgManager.getAwgVersion()
 
     fun onAwgConnect(config: String) {
-        viewModelScope.launch {
-            _checkVpnPermissionEvents.emit(Unit)
-        }
+        viewModelScope.launch { permissionEventsChannel.checkPermissions() }
 
         configsRepository.setAwgConfig(config)
         configsRepository.setIsAmneziaWGEnabled(true)
@@ -105,7 +103,6 @@ class MainViewModel(
     }
 
     fun onAwgDisconnect() {
-
         configsRepository.setAwgConfig(null)
         configsRepository.setIsAmneziaWGEnabled(false)
         configsRepository.setVpnInterface(VpnInterface.AMNEZIA_WG)

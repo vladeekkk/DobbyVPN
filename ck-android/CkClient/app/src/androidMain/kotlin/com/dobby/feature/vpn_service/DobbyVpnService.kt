@@ -34,12 +34,12 @@ import java.nio.ByteBuffer
 
 private const val IS_FROM_UI = "isLaunchedFromUi"
 
-class MyVpnService : VpnService() {
+class DobbyVpnService : VpnService() {
 
     companion object {
 
         fun createIntent(context: Context): Intent {
-            return Intent(context, MyVpnService::class.java).apply {
+            return Intent(context, DobbyVpnService::class.java).apply {
                 putExtra(IS_FROM_UI, true)
             }
         }
@@ -59,8 +59,7 @@ class MyVpnService : VpnService() {
     private var inputStream: FileInputStream? = null
     private var outputStream: FileOutputStream? = null
 
-    override fun onCreate() {
-        super.onCreate()
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         logger.log("Tunnel: Start curl before connection")
         CoroutineScope(Dispatchers.IO).launch {
             val ipAddress = ipFetcher.fetchIp()
@@ -75,9 +74,6 @@ class MyVpnService : VpnService() {
                 }
             }
         }
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val isServiceStartedFromUi = intent?.getBooleanExtra(IS_FROM_UI, false) ?: false
         when(dobbyConfigsRepository.getVpnInterface()) {
             VpnInterface.CLOAK_OUTLINE -> startCloakOutline(isServiceStartedFromUi)
@@ -159,7 +155,7 @@ class MyVpnService : VpnService() {
 
     private fun setupVpn() {
         vpnInterface = vpnInterfaceFactory
-            .create(context = this@MyVpnService, vpnService = this@MyVpnService)
+            .create(context = this@DobbyVpnService, vpnService = this@DobbyVpnService)
             .establish()
 
         if (vpnInterface != null) {

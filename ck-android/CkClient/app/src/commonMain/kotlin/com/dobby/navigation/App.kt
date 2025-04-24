@@ -6,13 +6,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.dobby.feature.logging.ui.LogScreen
-import com.dobby.feature.main.presentation.MainViewModel
 import com.dobby.feature.main.ui.DobbySocksScreen
+import com.dobby.util.koinViewModel
 
 @Composable
 fun App(
     modifier: Modifier = Modifier,
-    mainViewModel: MainViewModel,
 ) {
     val navController = rememberNavController()
 
@@ -24,14 +23,14 @@ fun App(
             DobbySocksScreen(
                 modifier,
                 navController,
-                mainViewModel,
+                viewModel = koinViewModel(),
             )
         }
         composable<AmneziaWGScreen> {
             AmneziaWGApp(
                 modifier,
                 navController,
-                mainViewModel,
+                viewModel = koinViewModel(),
             )
         }
         composable<LogsScreen> {

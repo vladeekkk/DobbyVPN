@@ -12,31 +12,29 @@ import com.dobby.common.ui.theme.CkClientTheme
 import com.dobby.feature.logging.presentation.LogsViewModel
 import com.dobby.feature.main.presentation.MainViewModel
 import com.dobby.navigation.App
+import com.dobby.navigation.App
+import com.dobby.feature.main.domain.PermissionEventsChannel
 import kotlinx.coroutines.launch
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.android.ext.android.inject
 
 class DobbySocksActivity : ComponentActivity() {
 
     private lateinit var requestVpnPermissionLauncher: ActivityResultLauncher<Intent>
 
-    private val viewModel: MainViewModel by viewModel()
-
-    private val logsViewModel: LogsViewModel by viewModel()
+    private val permissionEventsChannel: PermissionEventsChannel by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         initVpnPermissionLauncher()
         lifecycleScope.launch {
-            viewModel.checkVpnPermissionEvents.collect { checkVpnPermissionAndStart() }
+            permissionEventsChannel.observeCheckPermissionsEvents().collect {
+                checkVpnPermissionAndStart()
+            }
         }
-
         setContent {
             CkClientTheme {
-                App(
-                    mainViewModel = viewModel,
-                    logsViewModel = logsViewModel,
-                )
+                App()
             }
         }
     }
@@ -46,16 +44,17 @@ class DobbySocksActivity : ComponentActivity() {
         if (vpnIntent != null) {
             requestVpnPermissionLauncher.launch(vpnIntent)
         } else {
-            // not the best way to do it,
-            viewModel.checkPermissionAndStartVpn(isGranted = true)
+            onPermissionGranted(isGranted = true)
         }
     }
 
     private fun initVpnPermissionLauncher() {
         requestVpnPermissionLauncher = registerForActivityResult(
             StartActivityForResult()
-        ) { result ->
-            viewModel.checkPermissionAndStartVpn(isGranted = result.resultCode == RESULT_OK)
-        }
+        ) { result -> onPermissionGranted(isGranted = result.resultCode == RESULT_OK) }
+    }
+
+    private fun onPermissionGranted(isGranted: Boolean) {
+        lifecycleScope.launch { permissionEventsChannel.onPermissionGranted(isGranted) }
     }
 }

@@ -1,14 +1,14 @@
 package com.dobby.feature.vpn_service.domain
 
 sealed interface ConnectResult {
-    object ValidationError : ConnectResult
-    object Success : ConnectResult
-    object AlreadyConnected : ConnectResult
-    class Error(val error: Throwable) : ConnectResult
+    data object ValidationError : ConnectResult
+    data object Success : ConnectResult
+    data object AlreadyConnected : ConnectResult
+    data class Error(val error: Throwable) : ConnectResult
 }
 
 sealed interface DisconnectResult {
-    object Success : DisconnectResult
-    object AlreadyDisconnected : DisconnectResult
+    data object Success : DisconnectResult
+    data object AlreadyDisconnected : DisconnectResult
     class Error(val error: Throwable) : DisconnectResult
 }

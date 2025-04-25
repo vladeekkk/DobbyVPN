@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.hydraulic.conveyor) apply false
 }

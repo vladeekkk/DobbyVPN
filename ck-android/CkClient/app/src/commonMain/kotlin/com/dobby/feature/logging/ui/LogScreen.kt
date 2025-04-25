@@ -34,9 +34,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.dobby.feature.logging.presentation.LogsViewModel
+import com.dobby.util.koinViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.currentKoinScope
+import org.koin.compose.KoinContext
 
 @Preview
 @Composable
@@ -95,14 +98,6 @@ fun LogScreen(
                 HorizontalDivider(thickness = 1.dp, color = Color.Gray)
             }
         }
-    }
-}
-
-@Composable
-inline fun <reified T : ViewModel> koinViewModel(): T {
-    val scope = currentKoinScope()
-    return viewModel {
-        scope.get<T>()
     }
 }
 

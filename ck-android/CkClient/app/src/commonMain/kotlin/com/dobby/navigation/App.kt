@@ -29,11 +29,12 @@ import com.dobby.feature.main.presentation.MainViewModel
 import com.dobby.feature.main.ui.AwgScreen
 import com.dobby.feature.main.ui.DobbySocksScreen
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.dobby.feature.main.ui.DobbySocksScreen
+import com.dobby.util.koinViewModel
 
 @Composable
 fun App(
-    mainViewModel: MainViewModel,
-    logsViewModel: LogsViewModel,
+    modifier: Modifier = Modifier,
 ) {
     val navController = rememberNavController()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -53,17 +54,26 @@ fun App(
                 startDestination = MainScreen
             ) {
                 composable<MainScreen> {
-                    DobbySocksScreen(mainViewModel)
+                    DobbySocksScreen(viewModel = koinViewModel())
                 }
                 composable<AmneziaWGScreen> {
-                    AwgScreen(mainViewModel)
+                    AwgScreen(viewModel = koinViewModel())
                 }
                 composable<LogsScreen> {
-                    LogScreen(logsViewModel)
+                    LogScreen(viewModel = koinViewModel())
                 }
             }
         }
     )
+}
+
+@Composable
+fun App(
+    mainViewModel: MainViewModel,
+    logsViewModel: LogsViewModel,
+) {
+    val navController = rememberNavController()
+    val keyboardController = LocalSoftwareKeyboardController.current
 }
 
 @Composable

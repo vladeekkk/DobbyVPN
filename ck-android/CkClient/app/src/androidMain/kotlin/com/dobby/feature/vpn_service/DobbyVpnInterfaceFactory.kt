@@ -13,7 +13,7 @@ class DobbyVpnInterfaceFactory(
     private val logger: Logger
 ) {
 
-    fun create(context: Context, vpnService: MyVpnService): Builder {
+    fun create(context: Context, vpnService: DobbyVpnService): Builder {
         logger.log("Creating VPN Interface")
         val builder = vpnService.Builder()
             .setSession("Outline")

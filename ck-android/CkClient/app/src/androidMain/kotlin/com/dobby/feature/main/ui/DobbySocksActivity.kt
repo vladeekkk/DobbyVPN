@@ -8,8 +8,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.lifecycle.lifecycleScope
-import com.dobby.navigation.App
 import com.dobby.common.ui.theme.CkClientTheme
+import com.dobby.feature.logging.presentation.LogsViewModel
+import com.dobby.feature.main.presentation.MainViewModel
+import com.dobby.navigation.App
+import com.dobby.navigation.App
 import com.dobby.feature.main.domain.PermissionEventsChannel
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject

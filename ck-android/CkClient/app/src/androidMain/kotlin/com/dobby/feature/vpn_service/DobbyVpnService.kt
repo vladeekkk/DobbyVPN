@@ -45,7 +45,6 @@ class DobbyVpnService : VpnService() {
         }
     }
 
-    private val tunnelManager = TunnelManager(this)
     private var vpnInterface: ParcelFileDescriptor? = null
 
     private val logger: Logger by inject()
@@ -58,25 +57,11 @@ class DobbyVpnService : VpnService() {
     private val bufferSize = 65536
     private var inputStream: FileInputStream? = null
     private var outputStream: FileOutputStream? = null
+    private val tunnelManager = TunnelManager(this, logger)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        logger.log("Tunnel: Start curl before connection")
-        CoroutineScope(Dispatchers.IO).launch {
-            val ipAddress = ipFetcher.fetchIp()
-            withContext(Dispatchers.Main) {
-                ConnectionStateRepository.update(isConnected = true)
-                if (ipAddress != null) {
-                    logger.log("Tunnel: response from curl: $ipAddress")
-                    setupVpn()
-                } else {
-                    logger.log("Tunnel: Failed to fetch IP, cancelling VPN setup.")
-                    stopSelf()
-                }
-            }
-        }
-        val isServiceStartedFromUi = intent?.getBooleanExtra(IS_FROM_UI, false) ?: false
         when(dobbyConfigsRepository.getVpnInterface()) {
-            VpnInterface.CLOAK_OUTLINE -> startCloakOutline(isServiceStartedFromUi)
+            VpnInterface.CLOAK_OUTLINE -> startCloakOutline(intent)
             VpnInterface.AMNEZIA_WG -> startAwg()
         }
         return START_STICKY
@@ -94,7 +79,22 @@ class DobbyVpnService : VpnService() {
         tunnelManager.updateState(null, TunnelState.DOWN)
     }
 
-    private fun startCloakOutline(isServiceStartedFromUi: Boolean) {
+    private fun startCloakOutline(intent: Intent?) {
+        logger.log("Tunnel: Start curl before connection")
+        CoroutineScope(Dispatchers.IO).launch {
+            val ipAddress = ipFetcher.fetchIp()
+            withContext(Dispatchers.Main) {
+                ConnectionStateRepository.update(isConnected = true)
+                if (ipAddress != null) {
+                    logger.log("Tunnel: response from curl: $ipAddress")
+                    setupVpn()
+                } else {
+                    logger.log("Tunnel: Failed to fetch IP, cancelling VPN setup.")
+                    stopSelf()
+                }
+            }
+        }
+        val isServiceStartedFromUi = intent?.getBooleanExtra(IS_FROM_UI, false) ?: false
         val shouldTurnOutlineOn = dobbyConfigsRepository.getIsOutlineEnabled()
         if (shouldTurnOutlineOn || !isServiceStartedFromUi) {
             val apiKey = dobbyConfigsRepository.getOutlineKey()

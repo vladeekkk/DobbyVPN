@@ -13,12 +13,10 @@ type OutlineClient struct {
 	config string
 }
 
-func NewClient(transportConfig string) (*OutlineClient, error) {
-	od, err := internal.NewOutlineDevice(transportConfig)
-	if err != nil {
-		return nil, err
-	}
-	return &OutlineClient{device: od, config: transportConfig}, nil
+func NewClient(transportConfig string) *OutlineClient {
+	c := &OutlineClient{config: transportConfig}
+	common.Client.SetVpnClient(Name, c)
+	return c
 }
 
 func (c *OutlineClient) Connect() error {
@@ -28,11 +26,17 @@ func (c *OutlineClient) Connect() error {
 	}
 
 	c.device = od
+	common.Client.MarkActive(Name)
 	return nil
 }
 
 func (c *OutlineClient) Disconnect() error {
-	return c.device.Close()
+	err := c.device.Close()
+	if err != nil {
+		return err
+	}
+	common.Client.MarkInactive(Name)
+	return nil
 }
 
 func (c *OutlineClient) Refresh() error {
@@ -43,16 +47,10 @@ func (c *OutlineClient) GetServerIP() net.IP {
 	return c.device.GetServerIP()
 }
 
-func StartOutline(config string) error {
-	client, err := NewClient(config)
-	if err != nil {
-		return err
-	}
-
-	common.Client.SetVpnClient(Name, client)
-	return nil
+func (c *OutlineClient) Read() ([]byte, error) {
+	return c.device.Read()
 }
 
-func StopOutline() error {
-	return common.Client.Disconnect(Name)
+func (c *OutlineClient) Write(buf []byte) (int, error) {
+	return c.device.Write(buf)
 }

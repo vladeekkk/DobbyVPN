@@ -176,12 +176,14 @@ func awgTurnOn(interfaceName string, tunFd int32, settings string) int32 {
 	tunnelHandles[i] = TunnelHandle{device: device, uapi: uapi}
 
 	common.Client.SetVpnClient(Name, &AwgClient{interfaceName: interfaceName, tunFd: tunFd, settings: settings, tunnelHandle: i})
+	common.Client.MarkActive(Name)
 
 	return i
 }
 
 //export awgTurnOff
 func awgTurnOff(tunnelHandle int32) {
+	defer common.Client.MarkInactive(Name)
 	handle, ok := tunnelHandles[tunnelHandle]
 	if !ok {
 		return

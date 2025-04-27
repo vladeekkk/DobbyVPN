@@ -30,10 +30,6 @@ func (c *CkClient) Connect() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	//if c.connected {
-	//	log.Infof("ck-client already connected")
-	//	return
-	//}
 	c.connected = true
 	log.Infof("ck-client connected")
 

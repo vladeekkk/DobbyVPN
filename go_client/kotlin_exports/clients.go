@@ -3,7 +3,6 @@ package kotlin_exports
 import (
 	"go_client/cloak"
 	"go_client/outline"
-	"net"
 )
 
 type OutlineClient struct {
@@ -18,9 +17,9 @@ func (c *OutlineClient) Disconnect() error {
 	return c.OutlineClient.Disconnect()
 }
 
-func (c *OutlineClient) GetServerIP() net.IP {
-	return c.OutlineClient.GetServerIP()
-}
+//func (c *OutlineClient) GetServerIP() net.IP {
+//	return c.OutlineClient.GetServerIP()
+//}
 
 func (c *OutlineClient) Read() ([]byte, error) {
 	return c.OutlineClient.Read()

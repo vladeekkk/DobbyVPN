@@ -5,9 +5,9 @@ import (
 	"go_client/outline"
 )
 
-type OutlineClient = outline.OutlineClient
+type OutlineClient *outline.OutlineClient
 
-func NewOutlineClient(transportConfig string) *OutlineClient {
+func NewOutlineClient(transportConfig string) OutlineClient {
 	return outline.NewClient(transportConfig)
 }
 

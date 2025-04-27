@@ -7,7 +7,7 @@ import (
 
 type OutlineClient = outline.OutlineClient
 
-func NewClient(transportConfig string) *OutlineClient {
+func NewOutlineClient(transportConfig string) *OutlineClient {
 	return outline.NewClient(transportConfig)
 }
 

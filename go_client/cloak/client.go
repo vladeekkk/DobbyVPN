@@ -6,6 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go_client/common"
 	"sync"
+
+	_ "go_client/logger"
 )
 
 const Name = "cloak"
@@ -13,7 +15,6 @@ const Name = "cloak"
 var (
 	client *exported_client.CkClient
 	mu     sync.Mutex
-	once   sync.Once
 )
 
 func InitLog() {
@@ -26,8 +27,6 @@ func InitLog() {
 }
 
 func StartCloakClient(localHost, localPort, config string, udp bool) {
-	once.Do(InitLog)
-
 	mu.Lock()
 	defer mu.Unlock()
 

@@ -11,12 +11,11 @@ import "C"
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"go_client/common"
+	_ "go_client/logger"
 	"math"
 	"net"
-	"os"
-	"os/signal"
-	"runtime"
 	"runtime/debug"
 	"strings"
 	"unsafe"
@@ -29,11 +28,6 @@ import (
 )
 
 const Name = "awg"
-
-type AndroidLogger struct {
-	level C.int
-	tag   *C.char
-}
 
 type AwgClient struct {
 	interfaceName string
@@ -72,10 +66,6 @@ func cstring(s string) *C.char {
 	return (*C.char)(unsafe.Pointer(b))
 }
 
-func (l AndroidLogger) Printf(format string, args ...interface{}) {
-	C.__android_log_write(l.level, l.tag, cstring(fmt.Sprintf(format, args...)))
-}
-
 type TunnelHandle struct {
 	device *device.Device
 	uapi   net.Listener
@@ -83,32 +73,31 @@ type TunnelHandle struct {
 
 var tunnelHandles map[int32]TunnelHandle
 
-func init() {
-	tunnelHandles = make(map[int32]TunnelHandle)
-	signals := make(chan os.Signal)
-	signal.Notify(signals, unix.SIGUSR2)
-	go func() {
-		buf := make([]byte, os.Getpagesize())
-		for {
-			select {
-			case <-signals:
-				n := runtime.Stack(buf, true)
-				if n == len(buf) {
-					n--
-				}
-				buf[n] = 0
-				C.__android_log_write(C.ANDROID_LOG_ERROR, cstring("AmneziaWG/Stacktrace"), (*C.char)(unsafe.Pointer(&buf[0])))
-			}
-		}
-	}()
-}
+//func init() {
+//	tunnelHandles = make(map[int32]TunnelHandle)
+//	signals := make(chan os.Signal)
+//	signal.Notify(signals, unix.SIGUSR2)
+//	go func() {
+//		buf := make([]byte, os.Getpagesize())
+//		for {
+//			select {
+//			case <-signals:
+//				n := runtime.Stack(buf, true)
+//				if n == len(buf) {
+//					n--
+//				}
+//				buf[n] = 0
+//				C.__android_log_write(C.ANDROID_LOG_ERROR, cstring("AmneziaWG/Stacktrace"), (*C.char)(unsafe.Pointer(&buf[0])))
+//			}
+//		}
+//	}()
+//}
 
 //export awgTurnOn
 func awgTurnOn(interfaceName string, tunFd int32, settings string) int32 {
-	tag := cstring("AmneziaWG/" + interfaceName)
 	logger := &device.Logger{
-		Verbosef: AndroidLogger{level: C.ANDROID_LOG_DEBUG, tag: tag}.Printf,
-		Errorf:   AndroidLogger{level: C.ANDROID_LOG_ERROR, tag: tag}.Printf,
+		Verbosef: log.Infof,
+		Errorf:   log.Errorf,
 	}
 
 	tun, name, err := tun.CreateUnmonitoredTUNFromFD(int(tunFd))

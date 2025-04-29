@@ -41,19 +41,12 @@ func (h *healthChecker) start() {
 				status.reconnected = err == nil
 			}
 			lastStatus.Store(&status)
-			if h.sendMetrics {
-				h.sendStatusToServer(status)
-			}
 
 		case <-h.ctx.Done():
 			ticker.Stop()
 			return
 		}
 	}
-}
-
-func (h *healthChecker) sendStatusToServer(status healthCheckStatus) {
-	// TODO: implement
 }
 
 func checkHealth() healthCheckStatus {

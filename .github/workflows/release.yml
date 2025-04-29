@@ -37,15 +37,21 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           packages: >
-            platforms;android-34
-            build-tools;34.0.0
+            platforms;android-35
+            build-tools;35.0.0
             platform-tools
 
       - name: Install gomobile & init
         run: |
           go install golang.org/x/mobile/cmd/gomobile@latest
-          go mod download golang.org/x/mobile/bind/...
           gomobile init     
+
+      - name: Fetch gomobile runtime
+        run: |
+          cd go_client            
+          go get golang.org/x/mobile/bind@latest
+          go mod tidy              
+          cd ..
 
       - name: Build Go AAR
         run: |

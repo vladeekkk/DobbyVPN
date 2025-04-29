@@ -3,6 +3,7 @@ package healthcheck
 import (
 	"context"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"go_client/common"
 	"sync"
 	"sync/atomic"
@@ -41,6 +42,7 @@ func (h *healthChecker) start() {
 				status.reconnected = err == nil
 			}
 			lastStatus.Store(&status)
+			log.Infof(status.String())
 
 		case <-h.ctx.Done():
 			ticker.Stop()

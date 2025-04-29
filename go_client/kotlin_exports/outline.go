@@ -1,9 +1,6 @@
 package kotlin_exports
 
-import (
-	"go_client/cloak"
-	"go_client/outline"
-)
+import "go_client/outline"
 
 type OutlineClient struct {
 	*outline.OutlineClient
@@ -32,12 +29,4 @@ func (c *OutlineClient) Write(buf []byte) (int, error) {
 func NewOutlineClient(transportConfig string) *OutlineClient {
 	cl := outline.NewClient(transportConfig)
 	return &OutlineClient{OutlineClient: cl}
-}
-
-func StartCloakClient(localHost, localPort, config string, udp bool) {
-	cloak.StartCloakClient(localHost, localPort, config, udp)
-}
-
-func StopCloakClient() {
-	cloak.StopCloakClient()
 }

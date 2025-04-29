@@ -5,26 +5,22 @@
 
 package awg
 
-// #cgo LDFLAGS: -llog
-// #include <android/log.h>
 import "C"
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"go_client/common"
-	_ "go_client/logger"
-	"math"
-	"net"
-	"runtime/debug"
-	"strings"
-	"unsafe"
-
 	"github.com/amnezia-vpn/amneziawg-go/conn"
 	"github.com/amnezia-vpn/amneziawg-go/device"
 	"github.com/amnezia-vpn/amneziawg-go/ipc"
 	"github.com/amnezia-vpn/amneziawg-go/tun"
+	log "github.com/sirupsen/logrus"
+	"go_client/common"
+	_ "go_client/logger"
 	"golang.org/x/sys/unix"
+	"math"
+	"net"
+	"runtime/debug"
+	"strings"
 )
 
 const Name = "awg"
@@ -37,7 +33,7 @@ type AwgClient struct {
 }
 
 func (c *AwgClient) Connect() error {
-	c.tunnelHandle = awgTurnOn(c.interfaceName, c.tunFd, c.settings)
+	c.tunnelHandle = AwgTurnOn(c.interfaceName, c.tunFd, c.settings)
 	if c.tunnelHandle == -1 {
 		return fmt.Errorf("awgTurnOn failed") // TODO: handle error with more detail
 	}
@@ -45,7 +41,7 @@ func (c *AwgClient) Connect() error {
 }
 
 func (c *AwgClient) Disconnect() error {
-	awgTurnOff(c.tunnelHandle)
+	AwgTurnOff(c.tunnelHandle)
 	c.tunnelHandle = -1
 	return nil
 }
@@ -55,15 +51,6 @@ func (c *AwgClient) Refresh() error {
 		return err
 	} // TODO: handle error with more detail
 	return c.Connect()
-}
-
-func cstring(s string) *C.char {
-	b, err := unix.BytePtrFromString(s)
-	if err != nil {
-		b := [1]C.char{}
-		return &b[0]
-	}
-	return (*C.char)(unsafe.Pointer(b))
 }
 
 type TunnelHandle struct {
@@ -93,8 +80,7 @@ var tunnelHandles map[int32]TunnelHandle
 //	}()
 //}
 
-//export awgTurnOn
-func awgTurnOn(interfaceName string, tunFd int32, settings string) int32 {
+func AwgTurnOn(interfaceName string, tunFd int32, settings string) int32 {
 	logger := &device.Logger{
 		Verbosef: log.Infof,
 		Errorf:   log.Errorf,
@@ -170,8 +156,7 @@ func awgTurnOn(interfaceName string, tunFd int32, settings string) int32 {
 	return i
 }
 
-//export awgTurnOff
-func awgTurnOff(tunnelHandle int32) {
+func AwgTurnOff(tunnelHandle int32) {
 	defer common.Client.MarkInactive(Name)
 	handle, ok := tunnelHandles[tunnelHandle]
 	if !ok {
@@ -184,8 +169,7 @@ func awgTurnOff(tunnelHandle int32) {
 	handle.device.Close()
 }
 
-//export awgGetSocketV4
-func awgGetSocketV4(tunnelHandle int32) int32 {
+func AwgGetSocketV4(tunnelHandle int32) int32 {
 	handle, ok := tunnelHandles[tunnelHandle]
 	if !ok {
 		return -1
@@ -201,8 +185,7 @@ func awgGetSocketV4(tunnelHandle int32) int32 {
 	return int32(fd)
 }
 
-//export awgGetSocketV6
-func awgGetSocketV6(tunnelHandle int32) int32 {
+func AwgGetSocketV6(tunnelHandle int32) int32 {
 	handle, ok := tunnelHandles[tunnelHandle]
 	if !ok {
 		return -1
@@ -218,8 +201,7 @@ func awgGetSocketV6(tunnelHandle int32) int32 {
 	return int32(fd)
 }
 
-//export awgGetConfig
-func awgGetConfig(tunnelHandle int32) *C.char {
+func AwgGetConfig(tunnelHandle int32) *C.char {
 	handle, ok := tunnelHandles[tunnelHandle]
 	if !ok {
 		return nil
@@ -231,8 +213,7 @@ func awgGetConfig(tunnelHandle int32) *C.char {
 	return C.CString(settings)
 }
 
-//export awgVersion
-func awgVersion() *C.char {
+func AwgVersion() *C.char {
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
 		return C.CString("unknown")
@@ -248,5 +229,3 @@ func awgVersion() *C.char {
 	}
 	return C.CString("unknown")
 }
-
-func main() {}

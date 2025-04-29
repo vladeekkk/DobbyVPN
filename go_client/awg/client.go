@@ -5,8 +5,6 @@
 
 package awg
 
-import "C"
-
 import (
 	"fmt"
 	"github.com/amnezia-vpn/amneziawg-go/conn"
@@ -201,31 +199,60 @@ func AwgGetSocketV6(tunnelHandle int32) int32 {
 	return int32(fd)
 }
 
-func AwgGetConfig(tunnelHandle int32) *C.char {
+func AwgGetConfig(tunnelHandle int32) string {
 	handle, ok := tunnelHandles[tunnelHandle]
 	if !ok {
-		return nil
+		return ""
 	}
 	settings, err := handle.device.IpcGet()
 	if err != nil {
-		return nil
+		return ""
 	}
-	return C.CString(settings)
+	return settings
 }
 
-func AwgVersion() *C.char {
+func AwgVersion() string {
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
-		return C.CString("unknown")
+		return "unknown"
 	}
 	for _, dep := range info.Deps {
 		if dep.Path == "github.com/amnezia-vpn/amneziawg-go" {
 			parts := strings.Split(dep.Version, "-")
 			if len(parts) == 3 && len(parts[2]) == 12 {
-				return C.CString(parts[2][:7])
+				return parts[2][:7]
 			}
-			return C.CString(dep.Version)
+			return dep.Version
 		}
 	}
-	return C.CString("unknown")
+	return "unknown"
 }
+
+//func AwgGetConfig(tunnelHandle int32) *C.char {
+//	handle, ok := tunnelHandles[tunnelHandle]
+//	if !ok {
+//		return nil
+//	}
+//	settings, err := handle.device.IpcGet()
+//	if err != nil {
+//		return nil
+//	}
+//	return C.CString(settings)
+//}
+//
+//func AwgVersion() *C.char {
+//	info, ok := debug.ReadBuildInfo()
+//	if !ok {
+//		return C.CString("unknown")
+//	}
+//	for _, dep := range info.Deps {
+//		if dep.Path == "github.com/amnezia-vpn/amneziawg-go" {
+//			parts := strings.Split(dep.Version, "-")
+//			if len(parts) == 3 && len(parts[2]) == 12 {
+//				return C.CString(parts[2][:7])
+//			}
+//			return C.CString(dep.Version)
+//		}
+//	}
+//	return C.CString("unknown")
+//}

@@ -1,6 +1,5 @@
 package kotlin_exports
 
-import "C"
 import "go_client/awg"
 
 func AwgTurnOn(interfaceName string, tunFd int32, settings string) int32 {
@@ -19,10 +18,10 @@ func AwgGetSocketV6(tunnelHandle int32) int32 {
 	return awg.AwgGetSocketV6(tunnelHandle)
 }
 
-func AwgGetConfig(tunnelHandle int32) *C.char {
+func AwgGetConfig(tunnelHandle int32) string {
 	return awg.AwgGetConfig(tunnelHandle)
 }
 
-func AwgVersion() *C.char {
+func AwgVersion() string {
 	return awg.AwgVersion()
 }

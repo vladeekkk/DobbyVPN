@@ -44,12 +44,12 @@ jobs:
       - name: Install gomobile & init
         run: |
           go install golang.org/x/mobile/cmd/gomobile@latest
-          gomobile init -androidapi 34       
+          gomobile init     
 
       - name: Build Go AAR
         run: |
           cd go_client
-          gomobile bind -androidapi 34 -target=android -o ../go_client_android.aar ./kotlin_exports
+          gomobile bind -target=android -androidapi=34 -o ../go_client_android.aar ./kotlin_exports
           cd ..
 
       - name: Upload Go AAR

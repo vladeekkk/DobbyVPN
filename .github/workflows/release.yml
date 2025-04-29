@@ -9,6 +9,55 @@ on:
       - "v*"
 
 jobs:
+  prepare_go_client_android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Vendor Cloak/internal
+        run: |
+          git clone --depth 1 https://github.com/cbeuw/Cloak tmp
+          mkdir -p go_client/modules/Cloak
+          cp -r tmp/internal go_client/modules/Cloak/
+          rm -rf tmp
+
+      - name: Download Go modules
+        run: |
+          cd go_client
+          go mod download
+          cd ..
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: >
+            platforms;android-34
+            build-tools;34.0.0
+            platform-tools
+
+      - name: Install gomobile & init
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile@latest
+          gomobile init        
+
+      - name: Build Go AAR
+        run: |
+          cd go_client
+          gomobile bind -target=android -o ../go_client_android.aar ./kotlin_exports
+          cd ..
+
+      - name: Upload Go AAR
+        uses: actions/upload-artifact@master
+        with:
+          name: go_client_android.aar
+          path: go_client_android.aar
+
   windows_build:
     runs-on: windows-latest
     strategy:
@@ -208,6 +257,7 @@ jobs:
           path: Cloak/MacOs/dobbyvpn-darwin-arm64
 
   android_build:
+    needs: prepare_go_client_android
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -215,6 +265,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download Go AAR
+        uses: actions/download-artifact@master
+        with:
+          name: go_client_android.aar
+          path: ck-android/CkClient/libs
 
       - name: Setup Go
         uses: actions/setup-go@v5

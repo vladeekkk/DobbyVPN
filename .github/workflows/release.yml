@@ -58,7 +58,7 @@ jobs:
       - name: Build Go AAR
         run: |
           cd go_client
-          gomobile bind -v -target=ios -o ../OutlineLib.xcframework ./kotlin_exports 
+          gomobile bind -target=ios -o ../OutlineLib.xcframework ./kotlin_exports 
           cd ..
 
   windows_build:

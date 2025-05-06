@@ -1,8 +1,8 @@
-// //go:build ios && !android
-// // +build ios,!android
-//
-// package logger
-//
+//go:build ios && !android
+// +build ios,!android
+
+package logger
+
 // /*
 // #cgo LDFLAGS: -framework Foundation -framework os
 // #include <os/log.h>

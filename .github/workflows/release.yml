@@ -32,14 +32,14 @@ jobs:
           cd go_client
           go mod download
           cd ..
-
-#      - name: Setup Android SDK
-#        uses: android-actions/setup-android@v3
-#        with:
-#          packages: >
-#            platforms;android-34
-#            build-tools;34.0.0
-#            platform-tools
+      
+      #      - name: Setup Android SDK
+      #        uses: android-actions/setup-android@v3
+      #        with:
+      #          packages: >
+      #            platforms;android-34
+      #            build-tools;34.0.0
+      #            platform-tools
 
       - name: Install gomobile & init
         run: |
@@ -51,36 +51,36 @@ jobs:
           cd go_client            
           go get golang.org/x/mobile/bind@latest
           cd ..
-
-#      - name: Build Android Lib (.aar)
-#        run: |
-#          cd go_client
-#          gomobile bind -target=android -androidapi=26 -o ../go_client_android.aar ./kotlin_exports
-#          cd ..
       
+      #      - name: Build Android Lib (.aar)
+      #        run: |
+      #          cd go_client
+      #          gomobile bind -target=android -androidapi=26 -o ../go_client_android.aar ./kotlin_exports
+      #          cd ..
+
       - name: Build iOS Lib (.xcframework)
         run: |
           cd go_client
           gomobile bind -target=ios -o ../OutlineLib.xcframework ./kotlin_exports 
           cd ..
-      
-#      - name: Upload Android Lib (.aar)
-#        uses: actions/upload-artifact@master
-#        with:
-#          name: go_client_android.aar
-#          path: go_client_android.aar
-
-#      - name: Upload iOS Lib (.xcframework)
-#        uses: actions/upload-artifact@master
-#        with:
-#          name: OutlineLib.xcframework
-#          path: OutlineLib.xcframework
+  
+  #      - name: Upload Android Lib (.aar)
+  #        uses: actions/upload-artifact@master
+  #        with:
+  #          name: go_client_android.aar
+  #          path: go_client_android.aar
+  
+  #      - name: Upload iOS Lib (.xcframework)
+  #        uses: actions/upload-artifact@master
+  #        with:
+  #          name: OutlineLib.xcframework
+  #          path: OutlineLib.xcframework
 
   windows_build:
     runs-on: windows-latest
     strategy:
       matrix:
-        go-version: ["1.23.2"]
+        go-version: [ "1.23.2" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -157,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ["1.23.2"]
+        go-version: [ "1.23.2" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -228,7 +228,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        go-version: ["1.23.2"]
+        go-version: [ "1.23.2" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -279,7 +279,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ["1.23.2"]
+        go-version: [ "1.23.2" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -366,8 +366,8 @@ jobs:
       - name: Download iOS Go Lib (.xcframework)
       - uses: actions/download-artifact@master
       - with:
-        - name: OutlineLib.xcframework
-        - path: ck-android/CkClient/iosApp
+          - name: OutlineLib.xcframework
+          - path: ck-android/CkClient/iosApp
 
       - name: Build Kotlin Multiplatform
         run: |
@@ -478,28 +478,28 @@ jobs:
         with:
           name: DobbyVPN.ipa
           path: ck-android/CkClient/iosApp/build/ipa/*.ipa
-
-#      - name: Publish to TestFlight via FastLane
-#        env:
-#          APP_STORE_API_KEY: ${{ secrets.APP_STORE_API_KEY }}
-#          APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
-#          APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
-#        run: |
-#          gem install fastlane
-#          echo '{
-#          "key_id": "'"$APP_STORE_KEY_ID"'",
-#          "issuer_id": "'"$APP_STORE_ISSUER_ID"'",
-#          "key": "'"$APP_STORE_API_KEY"'"
-#          }' > api_key.json
-#
-#          fastlane pilot upload \
-#            --ipa ck-android/CkClient/iosApp/build/ipa/*.ipa \
-#            --api_key_path api_key.json
-#          rm -f api_key.json
+  
+  #      - name: Publish to TestFlight via FastLane
+  #        env:
+  #          APP_STORE_API_KEY: ${{ secrets.APP_STORE_API_KEY }}
+  #          APP_STORE_KEY_ID: ${{ secrets.APP_STORE_KEY_ID }}
+  #          APP_STORE_ISSUER_ID: ${{ secrets.APP_STORE_ISSUER_ID }}
+  #        run: |
+  #          gem install fastlane
+  #          echo '{
+  #          "key_id": "'"$APP_STORE_KEY_ID"'",
+  #          "issuer_id": "'"$APP_STORE_ISSUER_ID"'",
+  #          "key": "'"$APP_STORE_API_KEY"'"
+  #          }' > api_key.json
+  #
+  #          fastlane pilot upload \
+  #            --ipa ck-android/CkClient/iosApp/build/ipa/*.ipa \
+  #            --api_key_path api_key.json
+  #          rm -f api_key.json
 
   release:
     runs-on: ubuntu-latest
-    needs: [windows_build, linux_build, macos_build_arm64, android_build, ios_build]
+    needs: [ windows_build, linux_build, macos_build_arm64, android_build, ios_build ]
     permissions: write-all
 
     steps:

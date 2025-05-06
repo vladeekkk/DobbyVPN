@@ -9,8 +9,8 @@ on:
       - "v*"
 
 jobs:
-  prepare_go_client_android:
-    runs-on: ubuntu-latest
+  prepare_go_client_mobile:
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -33,18 +33,18 @@ jobs:
           go mod download
           cd ..
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: >
-            platforms;android-34
-            build-tools;34.0.0
-            platform-tools
+#      - name: Setup Android SDK
+#        uses: android-actions/setup-android@v3
+#        with:
+#          packages: >
+#            platforms;android-34
+#            build-tools;34.0.0
+#            platform-tools
 
       - name: Install gomobile & init
         run: |
           go install golang.org/x/mobile/cmd/gomobile@latest
-          gomobile init     
+          gomobile init
 
       - name: Fetch gomobile runtime
         run: |
@@ -52,17 +52,29 @@ jobs:
           go get golang.org/x/mobile/bind@latest
           cd ..
 
-      - name: Build Go AAR
+#      - name: Build Android Lib (.aar)
+#        run: |
+#          cd go_client
+#          gomobile bind -target=android -androidapi=26 -o ../go_client_android.aar ./kotlin_exports
+#          cd ..
+      
+      - name: Build iOS Lib (.xcframework)
         run: |
           cd go_client
-          gomobile bind -target=android -androidapi=26 -o ../go_client_android.aar ./kotlin_exports
+          gomobile bind -target=ios -o ../OutlineLib.xcframework ./kotlin_exports 
           cd ..
+      
+#      - name: Upload Android Lib (.aar)
+#        uses: actions/upload-artifact@master
+#        with:
+#          name: go_client_android.aar
+#          path: go_client_android.aar
 
-      - name: Upload Go AAR
-        uses: actions/upload-artifact@master
-        with:
-          name: go_client_android.aar
-          path: go_client_android.aar
+#      - name: Upload iOS Lib (.xcframework)
+#        uses: actions/upload-artifact@master
+#        with:
+#          name: OutlineLib.xcframework
+#          path: OutlineLib.xcframework
 
   windows_build:
     runs-on: windows-latest
@@ -263,7 +275,7 @@ jobs:
           path: Cloak/MacOs/dobbyvpn-darwin-arm64
 
   android_build:
-    needs: prepare_go_client_android
+    needs: prepare_go_client_mobile
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -272,7 +284,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download Go AAR
+      - name: Download Android Go Lib (.aar)
         uses: actions/download-artifact@master
         with:
           name: go_client_android.aar
@@ -317,6 +329,7 @@ jobs:
           path: dobbyvpn-android.apk
 
   ios_build:
+    needs: prepare_go_client_mobile
     runs-on: macos-latest
     strategy:
       matrix:
@@ -349,6 +362,12 @@ jobs:
           cd src
           go get ./...
           cd ..
+
+      - name: Download iOS Go Lib (.xcframework)
+      - uses: actions/download-artifact@master
+      - with:
+        - name: OutlineLib.xcframework
+        - path: ck-android/CkClient/iosApp
 
       - name: Build Kotlin Multiplatform
         run: |

@@ -57,7 +57,7 @@ package logger
 // 	}
 // }
 //
-// func LogInit() {
+func LogInit() {
 // 	log.SetOutput(infoWriter{})
 //
 // 	// stderr → error
@@ -69,4 +69,4 @@ package logger
 // 	r, w, _ = os.Pipe()
 // 	os.Stdout = w
 // 	go lineLog(r, false)
-// }
+}
